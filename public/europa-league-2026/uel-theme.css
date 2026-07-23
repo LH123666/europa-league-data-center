@@ -1,0 +1,73 @@
+@import url("ucl-theme.css");
+
+:root{
+  --ink:#26180f;
+  --green:#3b1b0b;
+  --lime:#ffb000;
+  --cream:#f8f2e9;
+  --line:#e5d6c8;
+  --muted:#806f62;
+  --ucl-navy:#21110a;
+  --ucl-purple:#8c2f0b;
+  --ucl-blue:#e44d00;
+  --ucl-cyan:#ff8a00;
+  --ucl-gold:#ffd447;
+}
+
+body{background:linear-gradient(180deg,#fffaf5 0,#f4eadf 100%);color:var(--ink)}
+header{border-bottom-color:#eadbcf;box-shadow:0 5px 22px #4b230b0c}
+.brand i{background:linear-gradient(145deg,#21110a,#d74400);color:#ffd447;box-shadow:0 7px 18px #7f250029}
+.brand small,.eyebrow{color:#9b735d}
+nav button.active{color:#d94700;border-bottom-color:#f36b00}
+.season{background:#fff8f1;border-color:#ead7c8}
+
+.hero{
+  background:
+    radial-gradient(circle at 82% 15%,#ff8a0038 0,transparent 28%),
+    radial-gradient(circle at 62% 90%,#bd2a003d 0,transparent 36%),
+    linear-gradient(125deg,#1c0f09 0%,#5b210d 52%,#c53b00 100%);
+}
+.hero:before{background-image:linear-gradient(115deg,transparent 48%,#ffb00017 49%,transparent 50%);background-size:48px 48px;opacity:1}
+.hero:after{content:'UEL';right:3%;top:-28px;font-size:245px;color:#fff08;letter-spacing:-18px}
+.hero .eyebrow,.hero-stat b,h1 em{color:#ffd447}
+.desc{color:#f2d5c2}
+.hero-stat small{color:#d9ac91}
+
+.card,.match,.fixture-day{border-color:#e7d8cb;box-shadow:0 12px 34px #7a2c0b12}
+.card-head,th{background:linear-gradient(90deg,#fff,#fff7ef)}
+.live-dot{background:#ff7a00;box-shadow:0 0 0 4px #ff7a0024,0 0 14px #ff7a00}
+tbody tr:hover,.fixture:hover,.match:hover{background:#fff1e5!important;border-color:#eeb894!important}
+.badge,.match b{background:linear-gradient(145deg,#29140b,#b83b0b)}
+#standings tr:nth-child(-n+8){border-left-color:#ff7a00}
+#standings tr:nth-child(n+9):nth-child(-n+24){border-left-color:#f2b441}
+.champion{background:#ff7a00}.europe{background:#f2b441}.relegation{background:#9f9186}
+.pulse .top,.fixture-date,.detail-tabs button.active,.side-table-head{background:linear-gradient(120deg,#251209,#a93708)!important}
+
+.update-btn,.prediction-save{background:linear-gradient(135deg,#e84b00,#ff8300)!important;border-color:#e84b00!important;box-shadow:0 7px 18px #c843002b}
+.prediction-add{color:#a83708!important;border-color:#d59b7d!important}
+.data-toast{background:#2d170d!important}
+.fixture-more{color:#b74611!important}
+.overlay{background:#241109cc}
+.drawer{background:#fffaf5}
+.team-hero .bigbadge{background:linear-gradient(145deg,#28150c,#b83a08);color:#ffd447}
+.prediction-editor{background:linear-gradient(135deg,#fff2e7,#fff8ef);border-color:#e7cbb8}
+.prediction-row input:focus,.prediction-row select:focus{border-color:#ee6c2b;box-shadow:0 0 0 2px #ee6c2b1f}
+.fixture-predictions{background:linear-gradient(90deg,#fff0df,#fff7e8);border-left-color:#f06b13}
+.fixture-predictions>b,.fixture-predictions>span{color:#6b2b0d}
+.fixture-predictions i{background:#8d2c08;color:#ffd447}
+.modal-standings{background:radial-gradient(circle at 25% 5%,#b7421875,transparent 42%)}
+.side-table-body{background:#fffaf5;box-shadow:0 22px 55px #2c11083f}
+.side-team{color:#32190e;border-bottom-color:#eaded4}
+.side-team.selected{background:#ffe8d3;box-shadow:inset 0 0 0 1px #e9a06c}
+.side-team.zone-1,.side-team.zone-2,.side-team.zone-3,.side-team.zone-4,.side-team.zone-5,.side-team.zone-6,.side-team.zone-7,.side-team.zone-8{border-left-color:#ff7a00}
+.side-team.zone-9,.side-team.zone-10,.side-team.zone-11,.side-team.zone-12,.side-team.zone-13,.side-team.zone-14,.side-team.zone-15,.side-team.zone-16,.side-team.zone-17,.side-team.zone-18,.side-team.zone-19,.side-team.zone-20,.side-team.zone-21,.side-team.zone-22,.side-team.zone-23,.side-team.zone-24{border-left-color:#f2b441}
+.side-legend i{background:#ff7a00!important}.side-legend span:nth-child(2) i{background:#f2b441!important}
+
+.competition-info .info-hero{background:linear-gradient(120deg,#241109,#a83608)}
+.competition-info .info-facts article b,.competition-info .path-controls button.active,.competition-info .map-chapter span{color:#d84a08}
+.competition-info .path-controls button.active{background:#34170b;color:#fff}
+.competition-info .league-hub,.competition-info .qual-result,.competition-info .champion-node{background:linear-gradient(135deg,#33170b,#a93608)}
+.competition-info .qual-round,.competition-info .rank-card,.competition-info .destination-card{border-color:#e7c5ad}
+.competition-info .money-total,.competition-info .donut{background:linear-gradient(135deg,#35180b,#bb3c08)}
+
+@media(max-width:550px){.hero:after{font-size:138px;right:-12%;top:18px}}
