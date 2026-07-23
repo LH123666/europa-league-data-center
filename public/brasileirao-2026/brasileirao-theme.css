@@ -1,0 +1,71 @@
+:root{
+  --ink:#082a36;
+  --green:#075b3a;
+  --lime:#ffd92f;
+  --cream:#f5f3e8;
+  --line:#d7ded3;
+  --muted:#677b76;
+  --br-green:#087443;
+  --br-yellow:#ffd92f;
+  --br-blue:#1565c0;
+  --br-navy:#072d43;
+}
+
+body{background:linear-gradient(180deg,#f8f8ef 0,#eef4ec 100%)}
+header{background:#fff;border-bottom-color:#d8e2d8;box-shadow:0 5px 22px #075b3a0a}
+.brand i{background:linear-gradient(145deg,#06492f,#07834b);color:var(--br-yellow);box-shadow:0 7px 18px #075b3a2b}
+.brand small,.eyebrow{color:#6a8177}
+nav button.active{color:var(--br-green);border-bottom-color:var(--br-yellow)}
+.season{background:#f7fbf5;border-color:#d3dfd3}
+
+.hero{
+  background:
+    radial-gradient(circle at 82% 18%,#ffd92f4d 0,transparent 27%),
+    radial-gradient(circle at 63% 94%,#1565c04a 0,transparent 35%),
+    linear-gradient(125deg,#063d2a 0%,#087443 54%,#0b5e4d 100%);
+}
+.hero:before{content:'';position:absolute;inset:0;background-image:linear-gradient(35deg,transparent 48%,#fff0 49%,#ffffff10 50%,transparent 51%);background-size:48px 48px;pointer-events:none}
+.hero:after{content:'BR';right:4%;top:-40px;font-size:290px;color:#fff08;letter-spacing:-18px}
+.hero .eyebrow,.hero-stat b,h1 em{color:var(--br-yellow)}
+.desc{color:#d4e7dd}
+.hero-stat small{color:#a9cbb9}
+
+.card,.match,.fixture-day{border-color:#d7e1d7;box-shadow:0 12px 34px #075b3a12}
+.card-head,th{background:linear-gradient(90deg,#fff,#f5faf3)}
+.live-dot{background:#ffc928;box-shadow:0 0 0 4px #ffd92f30,0 0 14px #ffd92f}
+tbody tr:hover,.fixture:hover,.match:hover{background:#f0f8e7!important;border-color:#b9d2ac!important}
+.badge,.match b{background:linear-gradient(145deg,var(--br-navy),var(--br-green));color:#fff}
+
+#standings tr{border-left-color:#b4beb8}
+#standings tr:nth-child(-n+6){border-left-color:#18a45f}
+#standings tr:nth-child(n+7):nth-child(-n+12){border-left-color:#2c7bc4}
+#standings tr:nth-child(n+17){border-left-color:#dc4a42}
+.champion{background:#18a45f}.europe{background:#2c7bc4}.relegation{background:#dc4a42}
+
+.pulse .top,.fixture-date{background:linear-gradient(120deg,#082e43,#087443)!important}
+.pulse strong i,.fixture-date b{color:var(--br-yellow)!important}
+.update-btn,.prediction-save{background:linear-gradient(135deg,#087443,#0c9460)!important;border-color:#087443!important;color:#fff!important}
+.prediction-add{color:#087443!important;border-color:#78ae91!important}
+.data-toast{background:#082f3c!important}
+.fixture-more{color:#087443!important}
+.overlay{background:#03261dcc}
+.drawer{background:#f9f8f0}
+.team-hero .bigbadge{background:linear-gradient(145deg,#072d43,#087443);color:#ffd92f}
+.detail-tabs button.active{background:linear-gradient(135deg,#072d43,#087443);border-color:#075b3a;color:#fff}
+.prediction-editor{background:linear-gradient(135deg,#eef8ee,#fffbe8);border-color:#cdddc9}
+.prediction-row input:focus,.prediction-row select:focus{border-color:#15945c;box-shadow:0 0 0 2px #15945c1f}
+.fixture-predictions{background:linear-gradient(90deg,#e9f7e8,#fff8d8);border-left-color:#18a45f}
+.fixture-predictions>b,.fixture-predictions>span{color:#154b38}
+.fixture-predictions i{background:#087443;color:#ffd92f}
+
+.modal-standings{background:radial-gradient(circle at 25% 5%,#0874437d,transparent 42%)}
+.side-table-head{background:linear-gradient(105deg,#072d43,#087443);color:#dbeae2}
+.side-table-body{background:#fbfcf7;box-shadow:0 22px 55px #03261d3f}
+.side-team{color:#123c31;border-bottom-color:#e0e8df}
+.side-team.selected{background:#eff7d5;box-shadow:inset 0 0 0 1px #b9cf78}
+.side-team.zone-1,.side-team.zone-2,.side-team.zone-3,.side-team.zone-4,.side-team.zone-5,.side-team.zone-6{border-left-color:#18a45f}
+.side-team.zone-7,.side-team.zone-8,.side-team.zone-9,.side-team.zone-10,.side-team.zone-11,.side-team.zone-12,.side-team.zone-13,.side-team.zone-14,.side-team.zone-15,.side-team.zone-16{border-left-color:#2c7bc4}
+.side-team.zone-17,.side-team.zone-18,.side-team.zone-19,.side-team.zone-20{border-left-color:#dc4a42}
+.side-legend i{background:#18a45f!important}.side-legend span:nth-child(2) i{background:#2c7bc4!important}.side-legend span:nth-child(3) i{background:#dc4a42!important}
+
+@media(max-width:550px){.hero:after{font-size:160px;right:-10%;top:20px}}
