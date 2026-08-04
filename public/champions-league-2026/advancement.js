@@ -2,7 +2,7 @@
   const teams=qualificationNames;
   const zh=team=>teams[team]||team;
   const round2=[
-    ['Mjallby','Lincoln Red Imps','3–0','Mjallby'],['Sabah','KuPS Kuopio','3–0','Sabah'],['Ararat-Armenia','Shamrock Rovers','3–2','Ararat-Armenia'],['Iberia Tbilisi','Slovan Bratislava','1–3','Slovan Bratislava'],['Aarhus','Lech Poznan','5–5 点4–3','Aarhus'],['Thun','Dinamo Zagreb','3–4','Dinamo Zagreb'],['KI Klaksvik','Kauno Zalgiris','0–1','Kauno Zalgiris'],['Larne','Red Star Belgrade','0–9','Red Star Belgrade'],['Vikingur Reykjavik','Hapoel Beer-Sheva','2–3','Hapoel Beer-Sheva'],['Fenerbahce','Gornik Zabrze','2–1','Fenerbahce'],['Sturm Graz','Hearts','6–0','Sturm Graz'],['Omonoia','Kairat Almaty','1–1 点5–6','Kairat Almaty'],['Levski Sofia','Universitatea Craiova','3–2','Levski Sofia'],['Egnatia','Celje','5–5 点1–4','Celje']
+    ['Mjallby','Lincoln Red Imps','3–0','0–0','3–0','Mjallby'],['Sabah','KuPS Kuopio','1–0','0–2','3–0','Sabah'],['Ararat-Armenia','Shamrock Rovers','2–0','2–1','3–2','Ararat-Armenia'],['Iberia Tbilisi','Slovan Bratislava','0–2','1–1','1–3','Slovan Bratislava'],['Aarhus','Lech Poznan','1–4','1–4','5–5 点4–3','Aarhus'],['Thun','Dinamo Zagreb','1–1','3–2','3–4','Dinamo Zagreb'],['KI Klaksvik','Kauno Zalgiris','0–0','1–0','0–1','Kauno Zalgiris'],['Larne','Red Star Belgrade','0–4','5–0','0–9','Red Star Belgrade'],['Vikingur Reykjavik','Hapoel Beer-Sheva','2–1','2–0','2–3','Hapoel Beer-Sheva'],['Fenerbahce','Gornik Zabrze','1–0','1–1','2–1','Fenerbahce'],['Sturm Graz','Hearts','4–0','0–2','6–0','Sturm Graz'],['Omonoia','Kairat Almaty','1–0','1–0','1–1 点5–6','Kairat Almaty'],['Levski Sofia','Universitatea Craiova','1–0','2–2','3–2','Levski Sofia'],['Egnatia','Celje','3–3','2–2','5–5 点1–4','Celje']
   ];
   const round3=[
     {path:'冠军路径',a:'Mjallby',b:'Slovan Bratislava',first:'08-05 00:00'},
@@ -45,7 +45,7 @@
   document.querySelector('main').appendChild(page);
 
   const teamLine=(team,mark='')=>`<span class="advance-team ${mark}"><strong>${zh(team)}</strong><small>${team}</small></span>`;
-  page.querySelector('#advanceRound2').innerHTML=round2.map(([a,b,score,winner])=>`<article class="advance-tie done">${teamLine(a,winner===a?'winner':'')}<em>${score}</em>${teamLine(b,winner===b?'winner':'')}<footer><span>总比分</span><b>${zh(winner)} 晋级</b></footer></article>`).join('');
+  page.querySelector('#advanceRound2').innerHTML=round2.map(([a,b,leg1,leg2,total,winner])=>`<article class="advance-tie done">${teamLine(a,winner===a?'winner':'')}<div class="leg-score-grid"><span><small>首回合 · ${zh(a)}主场</small><b>${leg1}</b></span><span><small>次回合 · ${zh(b)}主场</small><b>${leg2}</b></span><span class="aggregate"><small>两回合总比分</small><b>${total}</b></span></div>${teamLine(b,winner===b?'winner':'')}<footer><span>比分均为当场主队在前</span><b>${zh(winner)} 晋级</b></footer></article>`).join('');
   const round3Box=page.querySelector('#advanceRound3');
   function renderRound3(liveMatches=[]){
     round3Box.innerHTML=round3.map((tie,index)=>{const live=liveMatches.find(match=>sameTie(match,tie));const score=live&&live.completed?`${live.homeScore}–${live.awayScore}`:'VS';const state=live&&live.completed?'首回合结束':live&&live.inProgress?'比赛进行中':`${tie.first} 北京时间`;return `<article class="advance-tie active-tie" data-index="${index}"><span class="advance-path ${tie.path==='联赛路径'?'league':''}">${tie.path}</span>${teamLine(tie.a)}<em>${score}</em>${teamLine(tie.b)}<footer><span>${state}</span><b>${live&&live.completed?'等待次回合':'待赛'}</b></footer></article>`}).join('');
