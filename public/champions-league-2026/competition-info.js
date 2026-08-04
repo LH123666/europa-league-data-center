@@ -1,6 +1,8 @@
 (function(){
   const infoBtn=document.querySelector('#infoBtn');
   const infoPage=document.querySelector('#competitionInfo');
+  const qualificationBtn=document.querySelector('#qualificationBtn');
+  const qualificationPage=()=>document.querySelector('#qualificationPage');
   const schedulePage=document.querySelector('#schedulePage');
   const regularViews=['.hero','.layout','.results'];
   const setActive=button=>{document.querySelectorAll('nav button').forEach(item=>item.classList.toggle('active',item===button))};
@@ -9,11 +11,13 @@
     setActive(infoBtn);
     regularViews.forEach(selector=>document.querySelector(selector).style.display='none');
     schedulePage.classList.remove('active');
+    qualificationPage()?.classList.remove('active');
     infoPage.classList.add('active');
     window.scrollTo({top:0,behavior:'smooth'});
   });
-  document.querySelectorAll('nav button:not(#infoBtn)').forEach(button=>button.addEventListener('click',()=>{
+  document.querySelectorAll('nav button:not(#infoBtn):not(#qualificationBtn)').forEach(button=>button.addEventListener('click',()=>{
     hideInfo();
+    qualificationPage()?.classList.remove('active');
     if(button.id==='latestBtn')setTimeout(()=>document.querySelector('#latest').scrollIntoView({behavior:'smooth'}),0);
   }));
 
