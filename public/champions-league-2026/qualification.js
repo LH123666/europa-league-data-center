@@ -74,6 +74,7 @@
     ['.hero','.layout','.results'].forEach(selector=>document.querySelector(selector).style.display='none');
     document.querySelector('#schedulePage')?.classList.remove('active');
     document.querySelector('#competitionInfo')?.classList.remove('active');
+    document.querySelector('#advancementPage')?.classList.remove('active');
     page.classList.add('active');
     window.scrollTo({top:0,behavior:'smooth'});
   });
