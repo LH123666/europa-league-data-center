@@ -48,7 +48,7 @@
   page.querySelector('#advanceRound2').innerHTML=round2.map(([a,b,leg1,leg2,total,winner])=>`<article class="advance-tie done">${teamLine(a,winner===a?'winner':'')}<div class="leg-score-grid"><span><small>首回合 · ${zh(a)}主场</small><b>${leg1}</b></span><span><small>次回合 · ${zh(b)}主场</small><b>${leg2}</b></span><span class="aggregate"><small>两回合总比分</small><b>${total}</b></span></div>${teamLine(b,winner===b?'winner':'')}<footer><span>比分均为当场主队在前</span><b>${zh(winner)} 晋级</b></footer></article>`).join('');
   const round3Box=page.querySelector('#advanceRound3');
   function renderRound3(liveMatches=[]){
-    round3Box.innerHTML=round3.map((tie,index)=>{const live=liveMatches.find(match=>sameTie(match,tie));const score=live&&live.completed?`${live.homeScore}–${live.awayScore}`:'VS';const state=live&&live.completed?'首回合结束':live&&live.inProgress?'比赛进行中':`${tie.first} 北京时间`;return `<article class="advance-tie active-tie" data-index="${index}"><span class="advance-path ${tie.path==='联赛路径'?'league':''}">${tie.path}</span>${teamLine(tie.a)}<em>${score}</em>${teamLine(tie.b)}<footer><span>${state}</span><b>${live&&live.completed?'等待次回合':'待赛'}</b></footer></article>`}).join('');
+    round3Box.innerHTML=round3.map((tie,index)=>{const games=liveMatches.filter(match=>sameTie(match,tie));const completed=games.filter(match=>match.completed);const running=games.find(match=>match.inProgress);let aGoals=0,bGoals=0;completed.forEach(match=>{if(norm(match.home)===norm(tie.a)){aGoals+=match.homeScore;bGoals+=match.awayScore}else{aGoals+=match.awayScore;bGoals+=match.homeScore}});const score=completed.length?`${aGoals}–${bGoals}`:running?`${running.homeScore}–${running.awayScore}`:'VS';const state=completed.length>1?'两回合结束':completed.length===1?'首回合结束':running?'比赛进行中':`${tie.first} 北京时间`;return `<article class="advance-tie active-tie" data-index="${index}"><span class="advance-path ${tie.path==='联赛路径'?'league':''}">${tie.path}</span>${teamLine(tie.a)}<em>${score}</em>${teamLine(tie.b)}<footer><span>${state}</span><b>${completed.length>1?'总比分':completed.length===1?'等待次回合':'待赛'}</b></footer></article>`}).join('');
   }
   renderRound3();
   page.querySelector('#advancePlayoffs').innerHTML=playoffs.map(tie=>`<article class="advance-tie playoff"><span class="advance-path ${tie.path==='联赛路径'?'league':''}">${tie.path}</span><span class="advance-team"><strong>${tie.a}</strong></span><em>VS</em><span class="advance-team"><strong>${tie.b}</strong></span><footer><span>对阵已抽签</span><b>胜者进联赛阶段</b></footer></article>`).join('');
@@ -65,7 +65,8 @@
       if(!response.ok)throw new Error('HTTP '+response.status);
       const data=await response.json();
       renderRound3(data.matches||[]);
-      title.textContent=data.live?'已连接实时赛果':'已使用最后核对数据';
+      const count=(data.matches||[]).filter(match=>match.completed||match.inProgress).length;
+      title.textContent=data.live?`已同步 ${count} 场官方赛果`:'已使用最后核对数据';
       time.textContent=`检查于 ${new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})} · ${data.source||'UEFA / ESPN'}`;
     }catch(error){title.textContent='已使用最后核对数据';time.textContent='外部数据暂不可用 · 稍后将自动重试'}
     finally{refreshing=false;button.disabled=false;button.textContent='↻ 立即刷新'}
