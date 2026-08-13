@@ -50,3 +50,18 @@ const uelPlayoffTies=[
   ['Lech Poznan / KI Klaksvik','Thun / Vikingur Reykjavik'],['Hradec Kralove / Besiktas','Kauno Zalgiris'],
   ['Benfica / Hearts','Aarhus'],['OFI Crete','Maccabi Tel-Aviv / CSKA Sofia']
 ];
+
+const uelThirdRoundOrigins={
+  'Larne':'欧冠资格赛第二轮冠军路径淘汰','Iberia Tbilisi':'欧冠资格赛第二轮冠军路径淘汰',
+  'Shamrock Rovers':'欧冠资格赛第二轮冠军路径淘汰','Egnatia':'欧冠资格赛第二轮冠军路径淘汰',
+  'KuPS Kuopio':'欧冠资格赛第二轮冠军路径淘汰','Universitatea Craiova':'欧冠资格赛第二轮冠军路径淘汰',
+  'Lincoln Red Imps':'欧冠资格赛第二轮冠军路径淘汰','Omonia':'欧冠资格赛第二轮冠军路径淘汰',
+  'Lech Poznan':'欧冠资格赛第二轮冠军路径淘汰','KI Klaksvik':'欧冠资格赛第二轮冠军路径淘汰',
+  'Thun':'欧冠资格赛第二轮冠军路径淘汰','Vikingur Reykjavik':'欧冠资格赛第二轮冠军路径淘汰',
+  'Ferencvaros':'欧罗巴资格赛第二轮晋级','CSKA Sofia':'欧罗巴资格赛第二轮晋级',
+  'Anderlecht':'欧罗巴资格赛第二轮晋级','Hradec Kralove':'欧罗巴资格赛第二轮晋级',
+  'Maccabi Tel-Aviv':'欧罗巴资格赛第二轮晋级','PAOK':'欧罗巴资格赛第二轮晋级',
+  'Besiktas':'欧罗巴资格赛第二轮晋级','Benfica':'欧罗巴资格赛第二轮晋级','Pafos':'欧罗巴资格赛第二轮晋级',
+  'Gornik Zabrze':'第三轮直接参赛','Rangers':'第三轮直接参赛','Hearts':'第三轮直接参赛',
+  'Jagiellonia':'欧冠资格赛第二轮主路径淘汰','Salzburg':'欧冠资格赛第二轮主路径淘汰'
+};

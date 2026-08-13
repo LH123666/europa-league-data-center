@@ -9,7 +9,7 @@
   <section class="advance-drop"><b>落败球队去向</b><span>第三轮落败 → 欧协联附加赛</span><span>附加赛落败 → 欧协联联赛阶段</span><span>不再回到欧罗巴联赛</span></section>
   <footer class="advance-source"><div><b>说明</b><span>每张卡片分别显示首回合、次回合和总比分；待赛对阵在比赛完成后更新。</span></div><a href="https://www.uefa.com/uefaeuropaleague/news/02a6-20e5db0029dd-8241a8d00925-1000--europa-league-qualifying-fixtures-results-dates-how-it-works/" target="_blank" rel="noopener">UEFA 官方资格赛页面 →</a></footer>`;
   document.querySelector('main').appendChild(page);
-  const team=(club,win)=>`<span class="advance-team ${win?'winner':''}"><strong>${name(club)}</strong></span>`;
+  const team=(club,win)=>`<span class="advance-team ${win?'winner':''}"><strong>${name(club)}</strong><small class="team-origin">${uelThirdRoundOrigins[club]||'来源待确认'}</small></span>`;
   const compactTie=t=>`<article class="lane-tie"><div class="tie-leg"><span>首回合</span><small>${name(t.a)}主场</small></div><div class="lane-team ${t.winner===t.a?'winner':''}"><b>${name(t.a)}<em>主</em></b><strong>${t.leg1}</strong></div><div class="tie-leg second"><span>次回合</span><small>${name(t.b)}主场</small></div><div class="lane-team ${t.winner===t.b?'winner':''}"><b>${name(t.b)}<em>主</em></b><strong>${t.leg2}</strong></div><footer><span class="lane-path">${t.path}</span><span>总比分 ${t.total}</span><b>${name(t.winner)} 晋级</b></footer></article>`;
   page.querySelector('#uelAdvanceRound1').innerHTML=uelQualifyingTies.filter(t=>t.round==='第一轮').map(compactTie).join('');
   page.querySelector('#uelAdvanceRound2').innerHTML=uelQualifyingTies.filter(t=>t.round==='第二轮').map(compactTie).join('');
