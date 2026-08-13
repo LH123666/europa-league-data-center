@@ -10,7 +10,13 @@ const uelNames={
   'Derry':'德里城','Universitatea Cluj':'克卢日大学','Aluminij':'亚穆尼积','Vojvodina':'伏伊伏丁那',
   'Zilina':'日利纳','Vestri':'韦斯特里','Jagiellonia':'雅盖隆','Rangers':'格拉斯哥流浪者',
   'Salzburg':'萨尔茨堡','Lillestrom':'利勒斯特罗姆','OFI Crete':'克里特OFI',
-  'Sint-Truidense':'圣图尔登','Trabzonspor':'特拉布宗体育','Viktoria Plzen':'比尔森胜利'
+  'Sint-Truidense':'圣图尔登','Trabzonspor':'特拉布宗体育','Viktoria Plzen':'比尔森胜利',
+  'Vestri':'韦斯特里','Larne':'拉恩','Iberia Tbilisi':'第比利斯伊比利亚','Shamrock Rovers':'沙姆洛克流浪',
+  'Egnatia':'埃格纳蒂亚','KuPS Kuopio':'古比斯','Universitatea Craiova':'克拉约瓦大学','Lincoln Red Imps':'林肯红魔',
+  'Omonia':'奥莫尼亚','Lech Poznan':'波兹南莱赫','KI Klaksvik':'克拉克斯维克','Thun':'图恩',
+  'Vikingur Reykjavik':'雷克雅未克维京人','Gornik Zabrze':'扎布热戈尔尼克','Hearts':'哈茨',
+  'Ararat-Armenia':'亚美尼亚阿拉特','Crvena Zvezda':'贝尔格莱德红星','Lillestrom':'利勒斯特罗姆',
+  'Mjallby':'米亚尔比','Kairat Almaty':'阿拉木图凯拉特','Kauno Zalgiris':'考纳斯扎尔吉里斯','Aarhus':'奥胡斯'
 };
 
 const leagueTeams=[

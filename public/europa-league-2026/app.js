@@ -1,7 +1,7 @@
 document.head.insertAdjacentHTML('beforeend','<link rel="stylesheet" href="enhancements.css"><link rel="stylesheet" href="result-clickable.css">');
 const teams=leagueTeams.map(([name,code])=>[uelNames[name]||name,name,code,0,0,0,0,0,0,0,'']);
 const matches=rawMatches.map(m=>[m[0],aliases[m[1]]||m[1],aliases[m[2]]||m[2],m[3],m[4],m[5]]).sort((a,b)=>b[0].localeCompare(a[0]));
-const display=n=>`${uelNames[n]||n}（${n}）`;
+const display=n=>uelNames[n]||n;
 const tbody=document.querySelector('#standings');
 function render(q=''){tbody.innerHTML=teams.map((t,i)=>({t,i})).filter(({t})=>(t[0]+t[1]).toLowerCase().includes(q.toLowerCase())).map(({t,i})=>`<tr class="rank r${i+1}" data-team="${t[1]}"><td>${i+1}</td><td class="team"><i class="badge">${t[2]}</i><span class="bilingual"><strong>${t[0]}</strong><small>（${t[1]}）</small></span></td><td>${t[3]}</td><td>${t[4]}</td><td>${t[5]}</td><td>${t[6]}</td><td>${t[7]}–${t[8]}</td><td>${t[7]-t[8]>0?'+':''}${t[7]-t[8]}</td><td class="pts">${t[9]}</td><td><span class="form">${[...t[10]].map(x=>`<i class="${x.toLowerCase()}">${x==='W'?'胜':x==='D'?'平':'负'}</i>`).join('')||'—'}</span></td></tr>`).join('');}
 render();document.querySelector('#search').oninput=e=>render(e.target.value);
