@@ -1,0 +1,5 @@
+.advance-history{margin:34px clamp(18px,5vw,72px)}
+.advance-history .section-title{margin-bottom:16px}
+.advance-history-filters button{padding:9px 16px;border:1px solid #d4d0e5;background:#fff;color:#2b207a;cursor:pointer}
+.advance-history-filters button.active{color:#fff;background:#ea5b0c;border-color:#ea5b0c}
+@media(max-width:820px){.advance-history{margin-inline:16px}.advance-history .section-title{align-items:flex-start;flex-direction:column}}

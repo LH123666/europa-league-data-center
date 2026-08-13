@@ -97,17 +97,15 @@
   async function updateData(silent=false){
     const btn=document.querySelector('#updateBtn');btn.classList.add('loading');btn.disabled=true;
     try{
-      const res=await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/uefa.europa/scoreboard?dates=2026&limit=600&_=${Date.now()}`,{cache:'no-store'});
-      if(!res.ok)throw new Error('HTTP '+res.status);const data=await res.json(),fresh=[],future=[],now=Date.now(),seasonEvents=(data.events||[]).filter(e=>Number(e.season?.year)===2026);
-      seasonEvents.forEach(e=>{const c=e.competitions[0],h=c.competitors.find(x=>x.homeAway==='home'),a=c.competitors.find(x=>x.homeAway==='away'),scheduled=officialDateTime(e.date),date=scheduled.date,home=canonical(h.team.displayName),away=canonical(a.team.displayName),stage=e.season?.slug==='league-phase'?'league':'qualifying';
-        if(stage==='league')[[home,h],[away,a]].forEach(([name,club])=>{if(!teams.some(t=>t[1]===name))teams.push([uelNames[name]||name,name,club.team.abbreviation||name.slice(0,3).toUpperCase(),0,0,0,0,0,0,0,''])});
-        if(e.status.type.completed){let hh=0,ha=0;(c.details||[]).filter(x=>x.scoringPlay&&Number(x.clock.value)<=2700).forEach(x=>x.team.id===h.id?hh++:ha++);fresh.push([date,home,away,h.score+'-'+a.score,hh+'-'+ha,stage])}
-        else if(new Date(e.date).getTime()>now){future.push({date,time:scheduled.time,home,away})}
-      });
-      if(seasonEvents.length){if(fresh.length)matches.splice(0,matches.length,...fresh.sort((a,b)=>b[0].localeCompare(a[0])));allUpcoming=future.sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));recalc()}
-      const horizon=Date.now()+21*24*60*60*1000;upcoming=allUpcoming.filter(f=>new Date(f.date+'T23:59:59').getTime()<=horizon);renderSchedule();
-      document.querySelector('#updatedAt').textContent=(seasonEvents.length?'更新于 ':'已核对 ')+new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
-      if(!silent)toast(seasonEvents.length?`更新成功：${matches.length} 场赛果，${upcoming.length} 场待赛`:'ESPN尚未提供本届数据；已保留UEFA官方校准赛程');
+      const res=await fetch(`/api/uel-live?_=${Date.now()}`,{cache:'no-store'});
+      if(!res.ok)throw new Error('HTTP '+res.status);const data=await res.json();
+      if(data.matches?.length)matches.splice(0,matches.length,...data.matches.map(m=>[m.date,canonical(m.home),canonical(m.away),m.score,m.half||'—',m.stage||'qualifying']).sort((a,b)=>b[0].localeCompare(a[0])));
+      if(data.fixtures?.length)allUpcoming=data.fixtures.map(f=>({...f,home:canonical(f.home),away:canonical(f.away)}));
+      upcoming=[...allUpcoming];recalc();renderSchedule();
+      document.querySelector('#updatedAt').textContent='更新于 '+new Date(data.checkedAt||Date.now()).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+      document.querySelector('.results .data-source-panel span').textContent=`${data.source}；每次打开页面自动核对，半场比分未公布时显示“—”`;
+      document.querySelector('#schedulePage .data-source-panel span').textContent=`${data.source}；每次打开页面自动核对未来赛程`;
+      if(!silent)toast(`更新成功：${matches.length} 场赛果，${upcoming.length} 场待赛`);
     }catch(err){if(!silent)toast('更新失败，已继续使用本地数据');document.querySelector('#fixtureCount').textContent='获取失败'}
     finally{btn.classList.remove('loading');btn.disabled=false}
   }
