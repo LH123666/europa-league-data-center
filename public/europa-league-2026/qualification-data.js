@@ -28,27 +28,27 @@ const uelQualifyingTies=[
   {round:'第二轮',path:'主路径',a:'St. Gallen',b:'Benfica',leg1:'2–1',leg2:'5–0',total:'2–6',winner:'Benfica'},
   {round:'第二轮',path:'主路径',a:'Hajduk Split',b:'Pafos',leg1:'2–0',leg2:'4–0',total:'2–4（加时）',winner:'Pafos'},
   {round:'第三轮',path:'冠军路径',a:'Larne',b:'Iberia Tbilisi',leg1:'0–0',leg2:'2–1',total:'1–2（加时）',winner:'Iberia Tbilisi'},
-  {round:'第三轮',path:'冠军路径',a:'Shamrock Rovers',b:'Egnatia',leg1:'3–1',leg2:'待赛',total:'3–1',winner:''},
-  {round:'第三轮',path:'冠军路径',a:'KuPS Kuopio',b:'Universitatea Craiova',leg1:'1–1',leg2:'待赛',total:'1–1',winner:''},
-  {round:'第三轮',path:'冠军路径',a:'Lincoln Red Imps',b:'Omonia',leg1:'1–1',leg2:'待赛',total:'1–1',winner:''},
+  {round:'第三轮',path:'冠军路径',a:'Shamrock Rovers',b:'Egnatia',leg1:'3–1',leg2:'5–1',total:'4–6',winner:'Egnatia'},
+  {round:'第三轮',path:'冠军路径',a:'KuPS Kuopio',b:'Universitatea Craiova',leg1:'1–1',leg2:'2–1',total:'2–3',winner:'Universitatea Craiova'},
+  {round:'第三轮',path:'冠军路径',a:'Lincoln Red Imps',b:'Omonia',leg1:'1–1',leg2:'1–0',total:'1–2',winner:'Omonia'},
   {round:'第三轮',path:'冠军路径',a:'Lech Poznan',b:'KI Klaksvik',leg1:'1–0',leg2:'待赛',total:'1–0',winner:''},
-  {round:'第三轮',path:'冠军路径',a:'Thun',b:'Vikingur Reykjavik',leg1:'3–0',leg2:'待赛',total:'3–0',winner:''},
-  {round:'第三轮',path:'主路径',a:'Ferencvaros',b:'Gornik Zabrze',leg1:'1–0',leg2:'待赛',total:'1–0',winner:''},
-  {round:'第三轮',path:'主路径',a:'Jagiellonia',b:'Rangers',leg1:'2–1',leg2:'待赛',total:'2–1',winner:''},
-  {round:'第三轮',path:'主路径',a:'Maccabi Tel-Aviv',b:'CSKA Sofia',leg1:'0–3',leg2:'待赛',total:'0–3',winner:''},
-  {round:'第三轮',path:'主路径',a:'Salzburg',b:'Pafos',leg1:'1–0',leg2:'待赛',total:'1–0',winner:''},
-  {round:'第三轮',path:'主路径',a:'Hradec Kralove',b:'Besiktas',leg1:'0–1',leg2:'待赛',total:'0–1',winner:''},
-  {round:'第三轮',path:'主路径',a:'PAOK',b:'Anderlecht',leg1:'0–1',leg2:'待赛',total:'0–1',winner:''},
-  {round:'第三轮',path:'主路径',a:'Benfica',b:'Hearts',leg1:'6–1',leg2:'待赛',total:'6–1',winner:''}
+  {round:'第三轮',path:'冠军路径',a:'Thun',b:'Vikingur Reykjavik',leg1:'3–0',leg2:'3–2',total:'5–3',winner:'Thun'},
+  {round:'第三轮',path:'主路径',a:'Ferencvaros',b:'Gornik Zabrze',leg1:'1–0',leg2:'1–1',total:'2–1',winner:'Ferencvaros'},
+  {round:'第三轮',path:'主路径',a:'Jagiellonia',b:'Rangers',leg1:'2–1',leg2:'1–1',total:'3–2',winner:'Jagiellonia'},
+  {round:'第三轮',path:'主路径',a:'Maccabi Tel-Aviv',b:'CSKA Sofia',leg1:'0–3',leg2:'1–3',total:'3–4',winner:'CSKA Sofia'},
+  {round:'第三轮',path:'主路径',a:'Salzburg',b:'Pafos',leg1:'1–0',leg2:'3–3',total:'4–3',winner:'Salzburg'},
+  {round:'第三轮',path:'主路径',a:'Hradec Kralove',b:'Besiktas',leg1:'0–1',leg2:'1–0',total:'0–2',winner:'Besiktas'},
+  {round:'第三轮',path:'主路径',a:'PAOK',b:'Anderlecht',leg1:'0–1',leg2:'3–2',total:'2–4',winner:'Anderlecht'},
+  {round:'第三轮',path:'主路径',a:'Benfica',b:'Hearts',leg1:'6–1',leg2:'1–1',total:'7–2',winner:'Benfica'}
 ];
 
 const uelPlayoffTies=[
-  ['Trabzonspor','Ferencvaros / Gornik Zabrze'],['KuPS Kuopio / Universitatea Craiova','Ararat-Armenia'],
-  ['Sint-Truidense','Lincoln Red Imps / Omonia'],['Crvena Zvezda','Viktoria Plzen'],
-  ['Shamrock Rovers / Egnatia','Lillestrom'],['Jagiellonia / Rangers','Iberia Tbilisi'],
-  ['Mjallby','Pafos / Salzburg'],['Kairat Almaty','PAOK / Anderlecht'],
-  ['Lech Poznan / KI Klaksvik','Thun / Vikingur Reykjavik'],['Hradec Kralove / Besiktas','Kauno Zalgiris'],
-  ['Benfica / Hearts','Aarhus'],['OFI Crete','Maccabi Tel-Aviv / CSKA Sofia']
+  ['Trabzonspor','Ferencvaros'],['Universitatea Craiova','Ararat-Armenia'],
+  ['Sint-Truidense','Omonia'],['Crvena Zvezda','Viktoria Plzen'],
+  ['Egnatia','Lillestrom'],['Jagiellonia','Iberia Tbilisi'],
+  ['Mjallby','Salzburg'],['Kairat Almaty','Anderlecht'],
+  ['Lech Poznan / KI Klaksvik','Thun'],['Besiktas','Kauno Zalgiris'],
+  ['Benfica','Aarhus'],['OFI Crete','CSKA Sofia']
 ];
 
 const uelThirdRoundOrigins={

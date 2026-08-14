@@ -100,12 +100,18 @@
       const res=await fetch(`/api/uel-live?_=${Date.now()}`,{cache:'no-store'});
       if(!res.ok)throw new Error('HTTP '+res.status);const data=await res.json();
       if(data.matches?.length)matches.splice(0,matches.length,...data.matches.map(m=>[m.date,canonical(m.home),canonical(m.away),m.score,m.half||'—',m.stage||'qualifying']).sort((a,b)=>b[0].localeCompare(a[0])));
-      if(data.fixtures?.length)allUpcoming=data.fixtures.map(f=>({...f,home:canonical(f.home),away:canonical(f.away)}));
+      if(Array.isArray(data.fixtures))allUpcoming=data.fixtures.map(f=>({...f,home:canonical(f.home),away:canonical(f.away)}));
+      if(data.ties?.length)uelQualifyingTies.splice(0,uelQualifyingTies.length,...data.ties);
+      if(data.playoffTies?.length)uelPlayoffTies.splice(0,uelPlayoffTies.length,...data.playoffTies);
       upcoming=[...allUpcoming];recalc();renderSchedule();
-      document.querySelector('#updatedAt').textContent='更新于 '+new Date(data.checkedAt||Date.now()).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
-      document.querySelector('.results .data-source-panel span').textContent=`${data.source}；每次打开页面自动核对，半场比分未公布时显示“—”`;
-      document.querySelector('#schedulePage .data-source-panel span').textContent=`${data.source}；每次打开页面自动核对未来赛程`;
-      if(!silent)toast(`更新成功：${matches.length} 场赛果，${upcoming.length} 场待赛`);
+      window.renderUelQualification?.();window.renderUelAdvancement?.();
+      const checked=new Date(data.checkedAt||Date.now()).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+      const sourceDate=data.sourceUpdatedAt?new Date(`${data.sourceUpdatedAt}T12:00:00`).toLocaleDateString('zh-CN',{month:'numeric',day:'numeric'}):'未知';
+      document.querySelector('#updatedAt').textContent=`检查于 ${checked} · 数据至 ${sourceDate}${data.stale?' · 缓存':''}`;
+      const status=`${data.source}；官方数据更新至 ${sourceDate}${data.stale?'，在线源暂不可用，当前显示最近已验证数据':'，本次在线同步成功'}`;
+      document.querySelector('.results .data-source-panel span').textContent=status;
+      document.querySelector('#schedulePage .data-source-panel span').textContent=status;
+      if(!silent)toast(data.stale?`已检查：当前显示截至 ${sourceDate} 的已验证数据`:`同步成功：${matches.length} 场赛果，${upcoming.length} 场待赛`);
     }catch(err){if(!silent)toast('更新失败，已继续使用本地数据');document.querySelector('#fixtureCount').textContent='获取失败'}
     finally{btn.classList.remove('loading');btn.disabled=false}
   }
