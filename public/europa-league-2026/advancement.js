@@ -16,7 +16,12 @@
     page.querySelector('#uelAdvanceRound1').innerHTML=uelQualifyingTies.filter(t=>t.round==='第一轮').map(compactTie).join('');
     page.querySelector('#uelAdvanceRound2').innerHTML=uelQualifyingTies.filter(t=>t.round==='第二轮').map(compactTie).join('');
     page.querySelector('#uelAdvanceRound3').innerHTML=uelQualifyingTies.filter(t=>t.round==='第三轮').map(t=>`<article class="advance-tie ${t.winner?'done':'active-tie'}"><span class="advance-path ${t.path==='主路径'?'league':''}">${t.path}</span>${team(t.a,t.winner===t.a)}<div class="leg-score-grid"><span><small>首回合 · ${name(t.a)}主场</small><b>${t.leg1}</b></span><span><small>次回合 · ${name(t.b)}主场</small><b>${t.leg2}</b></span><span class="aggregate"><small>两回合总比分</small><b>${t.total}</b></span></div>${team(t.b,t.winner===t.b)}<footer><span>${t.winner?'两回合结束':'次回合待赛'}</span><b>${t.winner?`${name(t.winner)} 晋级`:'胜者进入附加赛'}</b></footer></article>`).join('');
-    page.querySelector('#uelAdvancePlayoffs').innerHTML=uelPlayoffTies.map(([a,b])=>`<article class="advance-tie playoff">${team(a,false)}<em>VS</em>${team(b,false)}<footer><span>首回合 8月20日 · 次回合 8月27日</span><b>胜者进联赛阶段</b></footer></article>`).join('');
+    page.querySelector('#uelAdvancePlayoffs').innerHTML=uelPlayoffTies.map(raw=>{
+      const t=Array.isArray(raw)?{a:raw[0],b:raw[1],leg1:'待赛',leg2:'待赛',total:'VS',winner:''}:raw;
+      const firstPlayed=t.leg1&&t.leg1!=='待赛',secondPlayed=t.leg2&&t.leg2!=='待赛';
+      const state=t.winner?'两回合结束':secondPlayed?'等待官方确认晋级结果':firstPlayed?'首回合结束 · 次回合8月27日':'首回合8月20日 · 次回合8月27日';
+      return `<article class="advance-tie playoff ${t.winner?'done':'active-tie'}">${team(t.a,t.winner===t.a)}<div class="leg-score-grid"><span><small>首回合 · ${name(t.a)}主场</small><b>${t.leg1||'待赛'}</b></span><span><small>次回合 · ${name(t.b)}主场</small><b>${t.leg2||'待赛'}</b></span><span class="aggregate"><small>${t.winner?'两回合总比分':'当前总比分'}</small><b>${t.total||'VS'}</b></span></div>${team(t.b,t.winner===t.b)}<footer><span>${state}</span><b>${t.winner?`${name(t.winner)} 晋级`:'胜者进联赛阶段'}</b></footer></article>`;
+    }).join('');
   }
   window.renderUelAdvancement=renderAdvancement;
   renderAdvancement();

@@ -33,11 +33,18 @@ test("Europa League data contains verified third-round results", async () => {
   assert.match(data, /Egnatia',leg1:'3–1',leg2:'5–1',total:'4–6',winner:'Egnatia'/);
   assert.match(data, /Anderlecht',leg1:'0–1',leg2:'3–2',total:'2–4',winner:'Anderlecht'/);
   assert.match(data, /\['Trabzonspor','Ferencvaros'\]/);
+  assert.match(data, /\.map\(\(\[a,b\]\)=>\(\{a,b,leg1:'待赛',leg2:'待赛',total:'VS',winner:''\}\)\)/);
   assert.match(liveUpdate, /uelQualifyingTies\.splice/);
+  assert.match(liveUpdate, /setInterval\(\(\)=>updateData\(true\),300000\)/);
   assert.match(liveUpdate, /renderUelAdvancement/);
   assert.match(advancement, /window\.renderUelAdvancement/);
+  assert.match(advancement, /当前总比分/);
+  assert.match(advancement, /t\.leg1\|\|'待赛'/);
   assert.match(qualification, /window\.renderUelQualification/);
   assert.match(api, /parseOfficialText/);
+  assert.match(api, /updatePlayoffTies/);
+  assert.match(api, /playoffTies=updatePlayoffTies/);
+  assert.match(api, /refreshBucket/);
   assert.match(api, /sourceUpdatedAt/);
   assert.match(api, /stale:!live/);
 });

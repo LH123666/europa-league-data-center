@@ -94,7 +94,10 @@
   const bindRows=()=>tbody.querySelectorAll('tr').forEach(r=>r.onclick=()=>openTeamLive(r.dataset.team));
   const oldRender=window.render;window.render=function(q=''){oldRender(q);bindRows()};
   bindRows();
+  let updateInProgress=false;
   async function updateData(silent=false){
+    if(updateInProgress)return;
+    updateInProgress=true;
     const btn=document.querySelector('#updateBtn');btn.classList.add('loading');btn.disabled=true;
     try{
       const res=await fetch(`/api/uel-live?_=${Date.now()}`,{cache:'no-store'});
@@ -102,21 +105,27 @@
       if(data.matches?.length)matches.splice(0,matches.length,...data.matches.map(m=>[m.date,canonical(m.home),canonical(m.away),m.score,m.half||'—',m.stage||'qualifying']).sort((a,b)=>b[0].localeCompare(a[0])));
       if(Array.isArray(data.fixtures))allUpcoming=data.fixtures.map(f=>({...f,home:canonical(f.home),away:canonical(f.away)}));
       if(data.ties?.length)uelQualifyingTies.splice(0,uelQualifyingTies.length,...data.ties);
-      if(data.playoffTies?.length)uelPlayoffTies.splice(0,uelPlayoffTies.length,...data.playoffTies);
+      if(data.playoffTies?.length)uelPlayoffTies.splice(0,uelPlayoffTies.length,...data.playoffTies.map(t=>Array.isArray(t)?t:{...t,a:canonical(t.a),b:canonical(t.b),winner:t.winner?canonical(t.winner):''}));
       upcoming=[...allUpcoming];recalc();renderSchedule();
       window.renderUelQualification?.();window.renderUelAdvancement?.();
       const checked=new Date(data.checkedAt||Date.now()).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
       const sourceDate=data.sourceUpdatedAt?new Date(`${data.sourceUpdatedAt}T12:00:00`).toLocaleDateString('zh-CN',{month:'numeric',day:'numeric'}):'未知';
       document.querySelector('#updatedAt').textContent=`检查于 ${checked} · 数据至 ${sourceDate}${data.stale?' · 缓存':''}`;
+      const playedPlayoffs=(data.playoffTies||[]).filter(t=>!Array.isArray(t)&&t.leg1&&t.leg1!=='待赛').length;
+      const liveTitle=document.querySelector('.advance-live b'),liveDate=document.querySelector('.advance-live span');
+      if(liveTitle)liveTitle.textContent=playedPlayoffs?`附加赛已更新 ${playedPlayoffs} 场首回合`:'附加赛比赛日';
+      if(liveDate)liveDate.textContent=`赛果核对至 ${data.sourceUpdatedAt||'最近一次官方更新'}`;
       const status=`${data.source}；官方数据更新至 ${sourceDate}${data.stale?'，在线源暂不可用，当前显示最近已验证数据':'，本次在线同步成功'}`;
       document.querySelector('.results .data-source-panel span').textContent=status;
       document.querySelector('#schedulePage .data-source-panel span').textContent=status;
       if(!silent)toast(data.stale?`已检查：当前显示截至 ${sourceDate} 的已验证数据`:`同步成功：${matches.length} 场赛果，${upcoming.length} 场待赛`);
     }catch(err){if(!silent)toast('更新失败，已继续使用本地数据');document.querySelector('#fixtureCount').textContent='获取失败'}
-    finally{btn.classList.remove('loading');btn.disabled=false}
+    finally{updateInProgress=false;btn.classList.remove('loading');btn.disabled=false}
   }
   document.querySelector('#updateBtn').onclick=()=>updateData(false);
   scheduleBtn.onclick=()=>{document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));scheduleBtn.classList.add('active');document.querySelector('.hero').style.display='none';document.querySelector('.layout').style.display='none';document.querySelector('.results').style.display='none';document.querySelector('#schedulePage').classList.add('active');window.scrollTo({top:0,behavior:'smooth'})};
   document.querySelectorAll('nav button:not(#scheduleBtn)').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelector('.hero').style.display='flex';document.querySelector('.layout').style.display='grid';document.querySelector('.results').style.display='block';document.querySelector('#schedulePage').classList.remove('active')}));
   updateData(true);
+  setInterval(()=>updateData(true),300000);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')updateData(true)});
 })(); 

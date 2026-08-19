@@ -1,9 +1,10 @@
-const UEFA_URL = "https://www.uefa.com/uefaeuropaleague/news/02a6-20e5db0029dd-8241a8d00925-1000--europa-league-qualifying-fixtures-results-dates-how-it-works/";
+const UEFA_URL = "https://www.uefa.com/uefaeuropaleague/accesslist/";
 const UEFA_TEXT_URL = `https://r.jina.ai/http://${UEFA_URL.replace(/^https?:\/\//, "")}`;
 
 type Match = { date: string; home: string; away: string; score: string; half: string; stage: "qualifying" | "league" };
 type Fixture = { date: string; time: string; home: string; away: string };
 type Tie = { round: string; path: string; a: string; b: string; leg1: string; leg2: string; total: string; winner: string };
+type PlayoffTie = Omit<Tie, "round" | "path">;
 type ParsedMatch = Match & { note: string; round: string };
 
 const VERIFIED_MATCHES: Match[] = [
@@ -46,11 +47,11 @@ const VERIFIED_TIES: Tie[] = [
   {round:"第三轮",path:"主路径",a:"Benfica",b:"Hearts",leg1:"6–1",leg2:"1–1",total:"7–2",winner:"Benfica"}
 ];
 
-const VERIFIED_PLAYOFF_TIES = [
+const VERIFIED_PLAYOFF_TIES: PlayoffTie[] = [
   ["Trabzonspor","Ferencvaros"],["Universitatea Craiova","Ararat-Armenia"],["Sint-Truidense","Omonia"],["Crvena Zvezda","Viktoria Plzen"],
   ["Egnatia","Lillestrom"],["Jagiellonia","Iberia Tbilisi"],["Mjallby","Salzburg"],["Kairat Almaty","Anderlecht"],
-  ["Lech Poznan / KI Klaksvik","Thun"],["Besiktas","Kauno Zalgiris"],["Benfica","Aarhus"],["OFI Crete","CSKA Sofia"]
-];
+  ["Lech Poznan","Thun"],["Besiktas","Kauno Zalgiris"],["Benfica","Aarhus"],["OFI Crete","CSKA Sofia"]
+].map(([a,b])=>({a,b,leg1:"待赛",leg2:"待赛",total:"VS",winner:""}));
 
 const VERIFIED_FIXTURES: Fixture[] = [
   ["2026-08-14","20:00","KI Klaksvik","Lech Poznan"],
@@ -83,7 +84,8 @@ function parseOfficialText(text:string){
 }
 
 async function fetchOfficial(){
-  const response=await fetch(UEFA_TEXT_URL,{cache:"no-store",signal:AbortSignal.timeout(12000),headers:{Accept:"text/markdown"}});
+  const refreshBucket=Math.floor(Date.now()/300_000);
+  const response=await fetch(`${UEFA_TEXT_URL}?n=%40&refresh=${refreshBucket}`,{cache:"no-store",signal:AbortSignal.timeout(12000),headers:{Accept:"text/markdown"}});
   if(!response.ok)throw new Error(`UEFA ${response.status}`);
   const parsed=parseOfficialText(await response.text());
   if(parsed.matches.length<10)throw new Error("UEFA response did not contain enough results");
@@ -92,12 +94,15 @@ async function fetchOfficial(){
 
 function mergeMatches(base:Match[],fresh:Match[]){const map=new Map(base.map(item=>[matchKey(item),item]));fresh.forEach(item=>map.set(matchKey(item),item));return [...map.values()]}
 
-function updateTies(base:Tie[],official:ParsedMatch[]){
-  return base.map(tie=>{
-    const first=official.find(m=>m.home===tie.a&&m.away===tie.b),second=official.find(m=>m.home===tie.b&&m.away===tie.a);
+function updateTie<T extends {a:string;b:string;leg1:string;leg2:string;total:string;winner:string}>(tie:T,official:ParsedMatch[],round:string):T{
+    const roundMatches=official.filter(match=>match.round===round);
+    const first=roundMatches.find(m=>m.home===tie.a&&m.away===tie.b),second=roundMatches.find(m=>m.home===tie.b&&m.away===tie.a);
     if(!first&&!second)return {...tie};
     const next={...tie};if(first)next.leg1=first.score.replace("-","–");if(second)next.leg2=second.score.replace("-","–");
-    const one=scorePair(next.leg1),two=scorePair(next.leg2);if(!one||!two)return next;
+    const one=scorePair(next.leg1),two=scorePair(next.leg2);
+    if(one&&!two){next.total=`${one[0]}–${one[1]}`;next.winner="";return next}
+    if(!one&&two){next.total=`${two[1]}–${two[0]}`;next.winner="";return next}
+    if(!one||!two)return next;
     const aTotal=one[0]+two[1],bTotal=one[1]+two[0];let suffix="";
     if(second?.note.includes("aet"))suffix="（加时）";
     const penalty=second?.note.match(/([\p{L}\s.-]+?)\s+win\s+(\d+)[–-](\d+)\s+on penalties/iu);
@@ -105,15 +110,17 @@ function updateTies(base:Tie[],official:ParsedMatch[]){
     next.total=`${aTotal}–${bTotal}${suffix}`;
     next.winner=aTotal>bTotal?tie.a:bTotal>aTotal?tie.b:penalty?(canon(penalty[1]).includes(tie.a)?tie.a:tie.b):next.winner;
     return next;
-  });
 }
+
+function updateTies(base:Tie[],official:ParsedMatch[]){return base.map(tie=>updateTie(tie,official,tie.round))}
+function updatePlayoffTies(base:PlayoffTie[],official:ParsedMatch[]){return base.map(tie=>updateTie(tie,official,"附加赛"))}
 
 export const dynamic="force-dynamic";
 export async function GET(){
-  let matches=[...VERIFIED_MATCHES],ties=VERIFIED_TIES.map(tie=>({...tie})),sourceUpdatedAt="2026-08-13",live=false;
-  try{const official=await fetchOfficial();matches=mergeMatches(matches,official.matches);ties=updateTies(ties,official.matches);sourceUpdatedAt=official.sourceUpdatedAt||matches.reduce((latest,item)=>item.date>latest?item.date:latest,sourceUpdatedAt);live=true}catch{}
+  let matches=[...VERIFIED_MATCHES],ties=VERIFIED_TIES.map(tie=>({...tie})),playoffTies=VERIFIED_PLAYOFF_TIES.map(tie=>({...tie})),sourceUpdatedAt="2026-08-13",live=false;
+  try{const official=await fetchOfficial();matches=mergeMatches(matches,official.matches);ties=updateTies(ties,official.matches);playoffTies=updatePlayoffTies(playoffTies,official.matches);sourceUpdatedAt=official.sourceUpdatedAt||matches.reduce((latest,item)=>item.date>latest?item.date:latest,sourceUpdatedAt);live=true}catch{}
   const completed=new Set(matches.map(matchKey));
   const fixtures=VERIFIED_FIXTURES.filter(item=>!completed.has(matchKey(item))&&new Date(`${item.date}T23:59:59Z`).getTime()>=Date.now()).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
   matches.sort((a,b)=>b.date.localeCompare(a.date));
-  return Response.json({source:live?"UEFA 官方资格赛页面":"UEFA 官方赛果（本地已验证快照）",sourceUrl:UEFA_URL,live,stale:!live,checkedAt:new Date().toISOString(),sourceUpdatedAt,matches,ties,playoffTies:VERIFIED_PLAYOFF_TIES,fixtures},{headers:{"Cache-Control":"no-store, max-age=0","Content-Type":"application/json; charset=utf-8","X-Content-Type-Options":"nosniff"}});
+  return Response.json({source:live?"UEFA 官方资格赛页面":"UEFA 官方赛果（本地已验证快照）",sourceUrl:UEFA_URL,live,stale:!live,checkedAt:new Date().toISOString(),sourceUpdatedAt,matches,ties,playoffTies,fixtures},{headers:{"Cache-Control":"no-store, max-age=0","Content-Type":"application/json; charset=utf-8","X-Content-Type-Options":"nosniff"}});
 }

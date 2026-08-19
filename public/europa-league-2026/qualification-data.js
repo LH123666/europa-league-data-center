@@ -47,9 +47,9 @@ const uelPlayoffTies=[
   ['Sint-Truidense','Omonia'],['Crvena Zvezda','Viktoria Plzen'],
   ['Egnatia','Lillestrom'],['Jagiellonia','Iberia Tbilisi'],
   ['Mjallby','Salzburg'],['Kairat Almaty','Anderlecht'],
-  ['Lech Poznan / KI Klaksvik','Thun'],['Besiktas','Kauno Zalgiris'],
+  ['Lech Poznan','Thun'],['Besiktas','Kauno Zalgiris'],
   ['Benfica','Aarhus'],['OFI Crete','CSKA Sofia']
-];
+].map(([a,b])=>({a,b,leg1:'待赛',leg2:'待赛',total:'VS',winner:''}));
 
 const uelThirdRoundOrigins={
   'Larne':'欧冠资格赛第二轮冠军路径淘汰','Iberia Tbilisi':'欧冠资格赛第二轮冠军路径淘汰',
