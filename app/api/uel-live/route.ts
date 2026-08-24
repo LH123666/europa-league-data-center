@@ -13,7 +13,10 @@ const VERIFIED_MATCHES: Match[] = [
   ["2026-07-23","Qarabag","CSKA Sofia","0-0"],["2026-07-23","Hammarby","Anderlecht","1-1"],["2026-07-23","Tromso","Hradec Kralove","0-1"],["2026-07-23","Sheriff","Maccabi Tel-Aviv","0-5"],["2026-07-23","Dynamo Kyiv","PAOK","2-3"],["2026-07-23","Twente","Ferencvaros","1-2"],["2026-07-23","Besiktas","Midtjylland","1-0"],["2026-07-23","St. Gallen","Benfica","2-1"],["2026-07-23","Hajduk Split","Pafos","2-0"],
   ["2026-07-30","Maccabi Tel-Aviv","Sheriff","1-0"],["2026-07-30","Hradec Kralove","Tromso","3-1"],["2026-07-30","Midtjylland","Besiktas","0-2"],["2026-07-30","Pafos","Hajduk Split","4-0"],["2026-07-30","PAOK","Dynamo Kyiv","2-0"],["2026-07-30","CSKA Sofia","Qarabag","0-0"],["2026-07-30","Anderlecht","Hammarby","3-1"],["2026-07-30","Ferencvaros","Twente","2-2"],["2026-07-30","Benfica","St. Gallen","5-0"],
   ["2026-08-04","Larne","Iberia Tbilisi","0-0"],["2026-08-04","Shamrock Rovers","Egnatia","3-1"],["2026-08-05","Ferencvaros","Gornik Zabrze","1-0"],["2026-08-06","KuPS Kuopio","Universitatea Craiova","1-1"],["2026-08-06","Lincoln Red Imps","Omonia","1-1"],["2026-08-06","Lech Poznan","KI Klaksvik","1-0"],["2026-08-06","Thun","Vikingur Reykjavik","3-0"],["2026-08-06","Jagiellonia","Rangers","2-1"],["2026-08-06","Maccabi Tel-Aviv","CSKA Sofia","0-3"],["2026-08-06","Salzburg","Pafos","1-0"],["2026-08-06","Hradec Kralove","Besiktas","0-1"],["2026-08-06","PAOK","Anderlecht","0-1"],["2026-08-06","Benfica","Hearts","6-1"],["2026-08-11","Iberia Tbilisi","Larne","2-1"],
-  ["2026-08-13","Omonia","Lincoln Red Imps","1-0"],["2026-08-13","Universitatea Craiova","KuPS Kuopio","2-1"],["2026-08-13","Vikingur Reykjavik","Thun","3-2"],["2026-08-13","Egnatia","Shamrock Rovers","5-1"],["2026-08-13","Besiktas","Hradec Kralove","1-0"],["2026-08-13","Pafos","Salzburg","3-3"],["2026-08-13","Gornik Zabrze","Ferencvaros","1-1"],["2026-08-13","CSKA Sofia","Maccabi Tel-Aviv","1-3"],["2026-08-13","Rangers","Jagiellonia","1-1"],["2026-08-13","Anderlecht","PAOK","3-2"],["2026-08-13","Hearts","Benfica","1-1"]
+  ["2026-08-13","Omonia","Lincoln Red Imps","1-0"],["2026-08-13","Universitatea Craiova","KuPS Kuopio","2-1"],["2026-08-13","Vikingur Reykjavik","Thun","3-2"],["2026-08-13","Egnatia","Shamrock Rovers","5-1"],["2026-08-13","Besiktas","Hradec Kralove","1-0"],["2026-08-13","Pafos","Salzburg","3-3"],["2026-08-13","Gornik Zabrze","Ferencvaros","1-1"],["2026-08-13","CSKA Sofia","Maccabi Tel-Aviv","1-3"],["2026-08-13","Rangers","Jagiellonia","1-1"],["2026-08-13","Anderlecht","PAOK","3-2"],["2026-08-13","Hearts","Benfica","1-1"],
+  ["2026-08-20","Kairat Almaty","Anderlecht","0-3"],["2026-08-20","Jagiellonia","Iberia Tbilisi","4-0"],["2026-08-20","Mjallby","Salzburg","0-1"],
+  ["2026-08-20","Trabzonspor","Ferencvaros","0-1"],["2026-08-20","Universitatea Craiova","Ararat-Armenia","1-1"],["2026-08-20","Egnatia","Lillestrom","0-0"],
+  ["2026-08-20","Besiktas","Kauno Zalgiris","3-0"],["2026-08-20","Lech Poznan","Thun","7-0"],["2026-08-20","Sint-Truidense","Omonia","1-0"],["2026-08-20","Crvena Zvezda","Viktoria Plzen","3-0"],["2026-08-20","OFI Crete","CSKA Sofia","3-0"],["2026-08-20","Benfica","Aarhus","3-1"]
 ].map(([date,home,away,score])=>({date,home,away,score,half:"—",stage:"qualifying"}));
 
 const VERIFIED_TIES: Tie[] = [
@@ -48,25 +51,34 @@ const VERIFIED_TIES: Tie[] = [
 ];
 
 const VERIFIED_PLAYOFF_TIES: PlayoffTie[] = [
-  ["Trabzonspor","Ferencvaros"],["Universitatea Craiova","Ararat-Armenia"],["Sint-Truidense","Omonia"],["Crvena Zvezda","Viktoria Plzen"],
-  ["Egnatia","Lillestrom"],["Jagiellonia","Iberia Tbilisi"],["Mjallby","Salzburg"],["Kairat Almaty","Anderlecht"],
-  ["Lech Poznan","Thun"],["Besiktas","Kauno Zalgiris"],["Benfica","Aarhus"],["OFI Crete","CSKA Sofia"]
-].map(([a,b])=>({a,b,leg1:"待赛",leg2:"待赛",total:"VS",winner:""}));
+  ["Trabzonspor","Ferencvaros","0–1"],["Universitatea Craiova","Ararat-Armenia","1–1"],["Sint-Truidense","Omonia","1–0"],["Crvena Zvezda","Viktoria Plzen","3–0"],
+  ["Egnatia","Lillestrom","0–0"],["Jagiellonia","Iberia Tbilisi","4–0"],["Mjallby","Salzburg","0–1"],["Kairat Almaty","Anderlecht","0–3"],
+  ["Lech Poznan","Thun","7–0"],["Besiktas","Kauno Zalgiris","3–0"],["Benfica","Aarhus","3–1"],["OFI Crete","CSKA Sofia","3–0"]
+].map(([a,b,leg1])=>({a,b,leg1,leg2:"待赛",total:leg1,winner:""}));
 
 const VERIFIED_FIXTURES: Fixture[] = [
-  ["2026-08-14","20:00","KI Klaksvik","Lech Poznan"],
-  ["2026-08-20","待定","Trabzonspor","Ferencvaros"],["2026-08-20","待定","Universitatea Craiova","Ararat-Armenia"],["2026-08-20","待定","Sint-Truidense","Omonia"],["2026-08-20","待定","Crvena Zvezda","Viktoria Plzen"],["2026-08-20","待定","Egnatia","Lillestrom"],["2026-08-20","待定","Jagiellonia","Iberia Tbilisi"],["2026-08-20","待定","Mjallby","Salzburg"],["2026-08-20","待定","Kairat Almaty","Anderlecht"],["2026-08-20","待定","Lech Poznan / KI Klaksvik","Thun"],["2026-08-20","待定","Besiktas","Kauno Zalgiris"],["2026-08-20","待定","Benfica","Aarhus"],["2026-08-20","待定","OFI Crete","CSKA Sofia"]
+  ["2026-08-27","18:00","Ararat-Armenia","Universitatea Craiova"],["2026-08-27","18:00","Iberia Tbilisi","Jagiellonia"],
+  ["2026-08-27","19:00","Omonia","Sint-Truidense"],["2026-08-27","19:00","Viktoria Plzen","Crvena Zvezda"],["2026-08-27","19:00","Lillestrom","Egnatia"],["2026-08-27","19:00","Salzburg","Mjallby"],["2026-08-27","19:00","Kauno Zalgiris","Besiktas"],
+  ["2026-08-27","20:00","Thun","Lech Poznan"],["2026-08-27","20:00","Aarhus","Benfica"],["2026-08-27","20:00","CSKA Sofia","OFI Crete"],
+  ["2026-08-27","20:30","Ferencvaros","Trabzonspor"],["2026-08-27","20:30","Anderlecht","Kairat Almaty"]
 ].map(([date,time,home,away])=>({date,time,home,away}));
 
-const aliases: Record<string,string> = {"Qarabağ":"Qarabag","Tromsø":"Tromso","Hradec Králové":"Hradec Kralove","Ferencváros":"Ferencvaros","Beşiktaş":"Besiktas","Žilina":"Zilina","Klaksvík":"KI Klaksvik","KÍ Klaksvík":"KI Klaksvik","Víkingur Reykjavík":"Vikingur Reykjavik","Jagiellonia Białystok":"Jagiellonia","Górnik Zabrze":"Gornik Zabrze","Lech Poznań":"Lech Poznan","Universitatea Craiova ":"Universitatea Craiova"};
+const aliases: Record<string,string> = {"Qarabağ":"Qarabag","Tromsø":"Tromso","Hradec Králové":"Hradec Kralove","Ferencváros":"Ferencvaros","Beşiktaş":"Besiktas","Žilina":"Zilina","Klaksvík":"KI Klaksvik","KÍ Klaksvík":"KI Klaksvik","Víkingur Reykjavík":"Vikingur Reykjavik","Jagiellonia Białystok":"Jagiellonia","Górnik Zabrze":"Gornik Zabrze","Lech Poznań":"Lech Poznan","Universitatea Craiova ":"Universitatea Craiova","Mjällby":"Mjallby","Lillestrøm":"Lillestrom","Viktoria Plzeň":"Viktoria Plzen","Kauno Žalgiris":"Kauno Zalgiris"};
 const canon=(value:string)=>aliases[value.trim()]||value.trim();
 const scorePair=(value:string)=>value.match(/(\d+)[–-](\d+)/)?.slice(1).map(Number) as [number,number] | undefined;
 const matchKey=(item:{date:string;home:string;away:string})=>`${item.date}|${item.home}|${item.away}`;
 
 function parseOfficialText(text:string){
   const matches:ParsedMatch[]=[];let round="",date="";
+  const prepared=text
+    .replace(/<script[\s\S]*?<\/script>/gi,"\n")
+    .replace(/<style[\s\S]*?<\/style>/gi,"\n")
+    .replace(/<[^>]+>/g,"\n")
+    .replace(/&nbsp;|&#160;/gi," ")
+    .replace(/&amp;/gi,"&")
+    .replace(/&#(\d+);/g,(_,code)=>String.fromCharCode(Number(code)));
   const months:Record<string,string>={July:"07",August:"08"};
-  for(const raw of text.split(/\r?\n/)){
+  for(const raw of prepared.split(/\r?\n/)){
     const line=raw.replace(/\[([^\]]+)\]\([^\)]+\)/g,"$1").replace(/[\uFEFF*_#]/g,"").replace(/\s+/g," ").trim();
     if(/First qualifying round/i.test(line))round="第一轮";else if(/Second qualifying round/i.test(line))round="第二轮";else if(/Third qualifying round/i.test(line))round="第三轮";else if(/Play-off round/i.test(line))round="附加赛";
     const day=line.match(/(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+(\d{1,2})\s+(July|August)/i);
@@ -85,11 +97,17 @@ function parseOfficialText(text:string){
 
 async function fetchOfficial(){
   const refreshBucket=Math.floor(Date.now()/300_000);
-  const response=await fetch(`${UEFA_TEXT_URL}?n=%40&refresh=${refreshBucket}`,{cache:"no-store",signal:AbortSignal.timeout(12000),headers:{Accept:"text/markdown"}});
-  if(!response.ok)throw new Error(`UEFA ${response.status}`);
-  const parsed=parseOfficialText(await response.text());
-  if(parsed.matches.length<10)throw new Error("UEFA response did not contain enough results");
-  return parsed;
+  let lastError="UEFA data unavailable";
+  for(const [url,label] of [[UEFA_URL,"UEFA"],[`${UEFA_TEXT_URL}?n=%40&refresh=${refreshBucket}`,"UEFA proxy"]]){
+    try{
+      const response=await fetch(url,{cache:"no-store",signal:AbortSignal.timeout(12000),headers:{Accept:"text/html, text/markdown","User-Agent":"UEL-Data-Center/1.0"}});
+      if(!response.ok)throw new Error(`${label} ${response.status}`);
+      const parsed=parseOfficialText(await response.text());
+      if(parsed.matches.length<10)throw new Error(`${label} response did not contain enough results`);
+      return parsed;
+    }catch(error){lastError=error instanceof Error?error.message:String(error)}
+  }
+  throw new Error(lastError);
 }
 
 function mergeMatches(base:Match[],fresh:Match[]){const map=new Map(base.map(item=>[matchKey(item),item]));fresh.forEach(item=>map.set(matchKey(item),item));return [...map.values()]}
@@ -117,7 +135,7 @@ function updatePlayoffTies(base:PlayoffTie[],official:ParsedMatch[]){return base
 
 export const dynamic="force-dynamic";
 export async function GET(){
-  let matches=[...VERIFIED_MATCHES],ties=VERIFIED_TIES.map(tie=>({...tie})),playoffTies=VERIFIED_PLAYOFF_TIES.map(tie=>({...tie})),sourceUpdatedAt="2026-08-13",live=false;
+  let matches=[...VERIFIED_MATCHES],ties=VERIFIED_TIES.map(tie=>({...tie})),playoffTies=VERIFIED_PLAYOFF_TIES.map(tie=>({...tie})),sourceUpdatedAt="2026-08-20",live=false;
   try{const official=await fetchOfficial();matches=mergeMatches(matches,official.matches);ties=updateTies(ties,official.matches);playoffTies=updatePlayoffTies(playoffTies,official.matches);sourceUpdatedAt=official.sourceUpdatedAt||matches.reduce((latest,item)=>item.date>latest?item.date:latest,sourceUpdatedAt);live=true}catch{}
   const completed=new Set(matches.map(matchKey));
   const fixtures=VERIFIED_FIXTURES.filter(item=>!completed.has(matchKey(item))&&new Date(`${item.date}T23:59:59Z`).getTime()>=Date.now()).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));

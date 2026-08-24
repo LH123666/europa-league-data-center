@@ -45,6 +45,10 @@ test("Europa League data contains verified third-round results", async () => {
   assert.match(api, /updatePlayoffTies/);
   assert.match(api, /playoffTies=updatePlayoffTies/);
   assert.match(api, /refreshBucket/);
+  assert.match(api, /\["2026-08-20","Kairat Almaty","Anderlecht","0-3"\]/);
+  assert.match(api, /\["2026-08-27","20:30","Anderlecht","Kairat Almaty"\]/);
+  assert.match(api, /\[UEFA_URL,"UEFA"\]/);
+  assert.match(api, /sourceUpdatedAt="2026-08-20"/);
   assert.match(api, /sourceUpdatedAt/);
   assert.match(api, /stale:!live/);
 });
