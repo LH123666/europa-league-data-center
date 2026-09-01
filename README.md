@@ -92,6 +92,18 @@ actions tied to the current ChatGPT user. Leave public content anonymous.
 - `npm test`: build the starter and verify its rendered loading skeleton
 - `npm run db:generate`: generate Drizzle migrations after schema changes
 
+## Cloudflare Pages production
+
+The GitHub-connected Cloudflare Pages project uses:
+
+- Production branch: `main`
+- Build command: leave empty
+- Build output directory: `public`
+- Root redirect: `/europa-league-2026/`
+- Live-data API: `functions/api/uel-live.ts`
+
+For local Pages verification, run `npx wrangler pages dev public`.
+
 ## Learn More
 
 - [vinext Documentation](https://github.com/cloudflare/vinext)
