@@ -3,7 +3,7 @@
   const nav=document.querySelector('nav'),main=document.querySelector('main'),season=document.querySelector('.season');
   const scheduleBtn=document.createElement('button');scheduleBtn.textContent='赛程安排';scheduleBtn.id='scheduleBtn';nav.appendChild(scheduleBtn);
   season.insertAdjacentHTML('beforebegin','<div class="update-wrap"><span class="updated-at" id="updatedAt">官方赛程 · 08-29</span><button class="update-btn" id="updateBtn"><span class="refresh-icon">↻</span><span class="label">更新数据</span></button></div>');
-  main.insertAdjacentHTML('beforeend','<section class="schedule-section" id="schedulePage"><div class="section-head"><div><p class="eyebrow">UPCOMING FIXTURES</p><h2>未来赛程</h2></div><span id="fixtureCount">正在获取…</span></div><div class="schedule-grid" id="scheduleGrid"><div class="empty-schedule">正在载入最新赛程…</div></div><div class="data-source-panel"><b>未来赛程数据来源</b><span>UEFA欧罗巴联赛官方赛程与 ESPN Scoreboard API</span><a href="https://www.uefa.com/uefaeuropaleague/accesslist/" target="_blank" rel="noopener">https://www.uefa.com/uefaeuropaleague/accesslist/</a><a href="https://site.api.espn.com/apis/site/v2/sports/soccer/uefa.europa/scoreboard?dates=2026&amp;limit=600" target="_blank" rel="noopener">https://site.api.espn.com/apis/site/v2/sports/soccer/uefa.europa/scoreboard?dates=2026&amp;limit=600</a></div></section>');
+  main.insertAdjacentHTML('beforeend','<section class="schedule-section" id="schedulePage"><div class="section-head"><div><p class="eyebrow">UPCOMING FIXTURES</p><h2>未来赛程</h2></div><span id="fixtureCount">正在获取…</span></div><div class="schedule-grid" id="scheduleGrid"><div class="empty-schedule">正在载入最新赛程…</div></div><div class="data-source-panel"><b>未来赛程数据来源</b><span>UEFA 欧罗巴联赛官方比赛接口（赛果与未来赛程）</span><a href="https://www.uefa.com/uefaeuropaleague/fixtures-results/" target="_blank" rel="noopener">https://www.uefa.com/uefaeuropaleague/fixtures-results/</a><a href="https://match.uefa.com/v5/matches?competitionId=14&amp;seasonYear=2027&amp;order=ASC&amp;offset=0&amp;limit=250" target="_blank" rel="noopener">UEFA 官方结构化比赛数据</a></div></section>');
   document.body.insertAdjacentHTML('beforeend','<div class="data-toast" id="dataToast"></div>');
   document.body.insertAdjacentHTML('beforeend','<aside class="modal-standings" id="modalStandings"></aside>');
   let allUpcoming=rawUpcoming.map(f=>({...f,home:aliases[f.home]||f.home,away:aliases[f.away]||f.away})),upcoming=[...allUpcoming];
@@ -33,7 +33,8 @@
     container.querySelector('.prediction-save').onclick=()=>{const saved=collectPredictionRows(container).filter(hasPrediction).slice(0,5);if(saved.length)predictions[key]=saved;else delete predictions[key];localStorage.setItem(predictionStorageKey,JSON.stringify(predictions));mountPredictionEditor(container,key,home,away,saved.length?saved:[emptyPrediction()]);renderSchedule();toast(saved.length?`已保存${saved.length}条预测`:'已清空本场预测')};
   };
   const canonical=n=>aliases[n]||n;
-  const officialDateTime=value=>{const parts=Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Zurich',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date(value)).filter(part=>part.type!=='literal').map(part=>[part.type,part.value]));return {date:`${parts.year}-${parts.month}-${parts.day}`,time:`${parts.hour}:${parts.minute}`}};
+  const toMatchRow=m=>[m.date,canonical(m.home),canonical(m.away),m.score,m.half||'—',m.stage||'qualifying'];
+  const toFixture=f=>({...f,home:canonical(f.home),away:canonical(f.away)});
   const toast=msg=>{const el=document.querySelector('#dataToast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2500)};
   const rankColor=rank=>{const hue=12+(rank-1)*(208/Math.max(1,teams.length-1));return `hsl(${hue} 72% ${rank<9?48:43}%)`};
   const recalc=()=>{
@@ -102,8 +103,11 @@
     try{
       const res=await fetch(`/api/uel-live?_=${Date.now()}`,{cache:'no-store'});
       if(!res.ok)throw new Error('HTTP '+res.status);const data=await res.json();
-      if(data.matches?.length)matches.splice(0,matches.length,...data.matches.map(m=>[m.date,canonical(m.home),canonical(m.away),m.score,m.half||'—',m.stage||'qualifying']).sort((a,b)=>b[0].localeCompare(a[0])));
-      if(Array.isArray(data.fixtures)){const completed=new Set((data.matches||[]).map(m=>`${m.date}|${canonical(m.home)}|${canonical(m.away)}`));const merged=[...uelLeagueFixtures,...data.fixtures.map(f=>({...f,home:canonical(f.home),away:canonical(f.away)}))];allUpcoming=[...new Map(merged.filter(f=>!completed.has(`${f.date}|${f.home}|${f.away}`)).map(f=>[`${f.date}|${f.home}|${f.away}`,f])).values()].sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time));}
+      const beforeLatest=matches[0]?.[0]||'',beforeCount=matches.length;
+      if(data.matches?.length){const incomingMatches=data.matches.map(toMatchRow),mergedMatches=window.uelDataSync.mergeMatchRows(data.authoritative?[]:matches,incomingMatches);matches.splice(0,matches.length,...mergedMatches)}
+      const fixtureBase=[...uelLeagueFixtures.map(toFixture),...allUpcoming];
+      const remoteFixtures=Array.isArray(data.fixtures)?data.fixtures.map(toFixture):[];
+      allUpcoming=window.uelDataSync.mergeFixtures(fixtureBase,remoteFixtures,matches);
       const qualificationBaselineCurrent=String(data.sourceUpdatedAt||'')>='2026-08-27';
       if(qualificationBaselineCurrent&&data.ties?.length)uelQualifyingTies.splice(0,uelQualifyingTies.length,...data.ties);
       if(qualificationBaselineCurrent&&data.playoffTies?.length)uelPlayoffTies.splice(0,uelPlayoffTies.length,...data.playoffTies.map(t=>Array.isArray(t)?t:{...t,a:canonical(t.a),b:canonical(t.b),winner:t.winner?canonical(t.winner):''}));
@@ -119,13 +123,15 @@
       const status=`${data.source}；官方数据更新至 ${sourceDate}${data.stale?'，在线源暂不可用，当前显示最近已验证数据':'，本次在线同步成功'}`;
       document.querySelector('.results .data-source-panel span').textContent=status;
       document.querySelector('#schedulePage .data-source-panel span').textContent=status;
-      if(!silent)toast(data.stale?`已检查：当前显示截至 ${sourceDate} 的已验证数据`:`同步成功：${matches.length} 场赛果，${upcoming.length} 场待赛`);
-    }catch(err){if(!silent)toast('更新失败，已继续使用本地数据');document.querySelector('#fixtureCount').textContent='获取失败'}
+      const changed=matches.length>beforeCount||(matches[0]?.[0]||'')>beforeLatest;
+      if(!silent)toast(data.stale?`已检查：在线源暂不可用，保留截至 ${sourceDate} 的已验证数据`:changed?`已更新：${matches.length} 场赛果，${upcoming.length} 场待赛`:'已检查：当前已是最新数据');
+    }catch{renderSchedule();if(!silent)toast('在线更新失败，已保留本地完整赛程')}
     finally{updateInProgress=false;btn.classList.remove('loading');btn.disabled=false}
   }
   document.querySelector('#updateBtn').onclick=()=>updateData(false);
-  scheduleBtn.onclick=()=>{document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));scheduleBtn.classList.add('active');document.querySelector('.hero').style.display='none';document.querySelector('.layout').style.display='none';document.querySelector('.results').style.display='none';document.querySelector('#schedulePage').classList.add('active');window.scrollTo({top:0,behavior:'smooth'})};
+  scheduleBtn.onclick=()=>{renderSchedule();document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));scheduleBtn.classList.add('active');document.querySelector('.hero').style.display='none';document.querySelector('.layout').style.display='none';document.querySelector('.results').style.display='none';document.querySelector('#schedulePage').classList.add('active');window.scrollTo({top:0,behavior:'smooth'})};
   document.querySelectorAll('nav button:not(#scheduleBtn)').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelector('.hero').style.display='flex';document.querySelector('.layout').style.display='grid';document.querySelector('.results').style.display='block';document.querySelector('#schedulePage').classList.remove('active')}));
+  renderSchedule();
   updateData(true);
   setInterval(()=>updateData(true),300000);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')updateData(true)});

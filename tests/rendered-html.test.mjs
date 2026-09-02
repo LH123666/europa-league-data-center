@@ -23,10 +23,11 @@ test("server renders the data-center entry page", async () => {
 });
 
 test("Europa League data contains the complete official league phase and qualifiers", async () => {
-  const [data, leagueData, liveUpdate, advancement, qualification, api] = await Promise.all([
+  const [data, leagueData, liveUpdate, dataSync, advancement, qualification, api] = await Promise.all([
     readFile(new URL("../public/europa-league-2026/qualification-data.js", import.meta.url), "utf8"),
     readFile(new URL("../public/europa-league-2026/league-data.js", import.meta.url), "utf8"),
     readFile(new URL("../public/europa-league-2026/live-update.js", import.meta.url), "utf8"),
+    readFile(new URL("../public/europa-league-2026/data-sync-utils.js", import.meta.url), "utf8"),
     readFile(new URL("../public/europa-league-2026/advancement.js", import.meta.url), "utf8"),
     readFile(new URL("../public/europa-league-2026/qualification.js", import.meta.url), "utf8"),
     readFile(new URL("../app/api/uel-live/route.ts", import.meta.url), "utf8"),
@@ -41,20 +42,42 @@ test("Europa League data contains the complete official league phase and qualifi
   assert.match(liveUpdate, /uelQualifyingTies\.splice/);
   assert.match(liveUpdate, /setInterval\(\(\)=>updateData\(true\),300000\)/);
   assert.match(liveUpdate, /renderUelAdvancement/);
+  assert.match(liveUpdate, /uelDataSync\.mergeMatchRows/);
+  assert.match(liveUpdate, /uelDataSync\.mergeFixtures/);
+  assert.match(liveUpdate, /renderSchedule\(\);\s*updateData\(true\)/);
+  assert.match(dataSync, /function mergeMatchRows/);
+  assert.match(dataSync, /function mergeFixtures/);
   assert.match(advancement, /window\.renderUelAdvancement/);
   assert.match(advancement, /资格赛全部结束/);
   assert.match(advancement, /t\.leg1\|\|'待赛'/);
   assert.match(qualification, /window\.renderUelQualification/);
   assert.match(api, /parseOfficialText/);
+  assert.match(api, /parseOfficialMatches/);
+  assert.match(api, /match\.uefa\.com\/v5\/matches/);
   assert.match(api, /updatePlayoffTies/);
   assert.match(api, /playoffTies=updatePlayoffTies/);
   assert.match(api, /refreshBucket/);
   assert.match(api, /\["2026-08-20","Kairat Almaty","Anderlecht","0-3"\]/);
-  assert.match(api, /\["2026-08-27","20:30","Anderlecht","Kairat Almaty"\]/);
-  assert.match(api, /\[UEFA_URL,"UEFA"\]/);
-  assert.match(api, /sourceUpdatedAt="2026-08-20"/);
+  assert.match(api, /\["2026-08-27","Anderlecht","Kairat Almaty","3-0"\]/);
+  assert.match(api, /sourceUpdatedAt="2026-08-27"/);
   assert.match(api, /sourceUpdatedAt/);
+  assert.match(api, /sourceErrors/);
+  assert.match(api, /authoritative/);
+  assert.match(api, /"L\. Red Imps":"Lincoln Red Imps"/);
   assert.match(api, /stale:!live/);
+});
+
+test("Europa League live merging never removes newer local data or official fixtures", async () => {
+  const vm = await import("node:vm");
+  const source=await readFile(new URL("../public/europa-league-2026/data-sync-utils.js",import.meta.url),"utf8");
+  const context={window:null};context.window=context;vm.createContext(context);vm.runInContext(source,context);
+  const current=[["2026-08-27","Anderlecht","Kairat Almaty","3-0","—","qualifying"]];
+  const stale=[["2026-08-20","Kairat Almaty","Anderlecht","0-3","—","qualifying"]];
+  const merged=context.uelDataSync.mergeMatchRows(current,stale);
+  assert.equal(merged.length,2);assert.equal(merged[0][0],"2026-08-27");
+  const base=[{date:"2026-09-16",time:"18:45",home:"A",away:"B"},{date:"2026-09-17",time:"21:00",home:"C",away:"D"}];
+  const fixtures=context.uelDataSync.mergeFixtures(base,[],[["2026-09-16","A","B","2-0","—","league"]]);
+  assert.equal(fixtures.length,1);assert.equal(fixtures[0].home,"C");
 });
 
 test("Europa League league-phase invariants are enforced", async () => {

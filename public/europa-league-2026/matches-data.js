@@ -29,7 +29,7 @@ const aliases={
   'AZ':'AZ Alkmaar','AFC Bournemouth':'Bournemouth','Celta Vigo':'Celta','TSG Hoffenheim':'Hoffenheim',
   'Bayer Leverkusen':'Leverkusen','Olympique de Marseille':'Marseille','AC Milan':'Milan','Stade Rennes':'Rennes',
   'Qarabağ':'Qarabag','Qarabag FK':'Qarabag','PFC CSKA Sofia':'CSKA Sofia','Tromsø':'Tromso',
-  'FC Hradec Králové':'Hradec Kralove','M. Tel-Aviv':'Maccabi Tel-Aviv','Dynamo Kiev':'Dynamo Kyiv',
+  'FC Hradec Králové':'Hradec Kralove','M. Tel-Aviv':'Maccabi Tel-Aviv','L. Red Imps':'Lincoln Red Imps','Víkingur R.':'Vikingur Reykjavik','Dynamo Kiev':'Dynamo Kyiv',
   'PAOK Salonika':'PAOK','Ferencváros':'Ferencvaros','Beşiktaş':'Besiktas','FC Midtjylland':'Midtjylland',
   'Hajduk Split':'Hajduk Split','U. Cluj':'Universitatea Cluj','Universitatea Cluj':'Universitatea Cluj',
   'Žilina':'Zilina','Vojvodina':'Vojvodina','FC Salzburg':'Salzburg','Viktoria Plzeň':'Viktoria Plzen'
