@@ -18,7 +18,11 @@ test('dashboard navigation, matrix, latest expansion, status, preserved notes',a
   w.fetch=async url=>String(url).includes('/api/uel-live')?{ok:true,json:async()=>({matches:[],fixtures:[],coverage:{qualifying:true,league:false,knockout:false},source:'UEFA qualification only',checkedAt:new Date().toISOString(),sourceUpdatedAt:'2026-08-27',ties:[],playoffTies:[]})}:{ok:true,json:async()=>({events:[]})};
   w.addEventListener('error',e=>errors.push(e.error));w.localStorage.setItem('uel36-team-notes-v1','{"Milan":"KEEP"}');
   const context=dom.getInternalVMContext();
-  for(const s of [...w.document.querySelectorAll('script[src]')])vm.runInContext(fs.readFileSync(path.join(dir,s.getAttribute('src').split('?')[0]),'utf8'),context,{filename:s.getAttribute('src')});
+  for(const s of [...w.document.querySelectorAll('script[src]')]){
+    const filename=s.getAttribute('src').split('?')[0];
+    vm.runInContext(fs.readFileSync(path.join(dir,filename),'utf8'),context,{filename:s.getAttribute('src')});
+    if(filename==='season-context.js')for(const dataFile of ['matches-data.js','league-data.js','qualification-data.js'])vm.runInContext(fs.readFileSync(path.join(dir,dataFile),'utf8'),context,{filename:dataFile});
+  }
   await new Promise(r=>setTimeout(r,50));const q=s=>w.document.querySelector(s);
   assert.equal(q('#latest').style.display,'none');q('#latestBtn').click();assert.equal(q('#latest').style.display,'block');assert.equal(q('.layout').style.display,'none');
   q('#advancementBtn').click();q('[data-tab="statistics"]').click();assert.equal(q('#seasonStatistics').hidden,false);assert.equal(q('#seasonQualification').hidden,true);assert.equal(w.document.querySelectorAll('.season-cell').length,288);
@@ -49,4 +53,31 @@ test('dashboard navigation, matrix, latest expansion, status, preserved notes',a
   let opened;w.openFixtureDetail=(...args)=>opened=args;q('#resultGrid .match').click();assert.equal(opened.length,4);
   const summary=w.uelDashboardUpdate({coverage:{qualifying:true},source:'资格赛页面',checkedAt:new Date().toISOString()},false);assert.match(summary,/1\/3/);assert.match(q('#seasonDataStatus').textContent,/使用缓存/);w.uelDashboardUpdate(null,true);assert.match(q('#updatedAt').textContent,/0\/3/);
   assert.equal(w.localStorage.getItem('uel36-team-notes-v1'),'{"Milan":"KEEP"}');assert.deepEqual(errors,[]);dom.window.close();
+});
+
+test('2025/26 archive renders independently without calling the live endpoint',async()=>{
+  const require=createRequire(import.meta.url);let JSDOM;
+  try{({JSDOM}=require(process.env.UEL_JSDOM_PATH||'jsdom'));}catch{throw new Error('Install jsdom in a temporary directory and set UEL_JSDOM_PATH to its absolute module path (see README).');}
+  const html=fs.readFileSync(path.join(dir,'index.html'),'utf8');
+  const dom=new JSDOM(html,{url:'https://example.test/europa-league-2026/?season=2025-26',runScripts:'outside-only',pretendToBeVisual:true});
+  const w=dom.window,context=dom.getInternalVMContext();let fetches=0;
+  w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};w.HTMLElement.prototype.scrollTo=()=>{};w.setInterval=()=>0;w.fetch=async()=>{fetches++;return {ok:true,json:async()=>({events:[]})}};
+  for(const s of [...w.document.querySelectorAll('script[src]')]){
+    const filename=s.getAttribute('src').split('?')[0];
+    vm.runInContext(fs.readFileSync(path.join(dir,filename),'utf8'),context,{filename:s.getAttribute('src')});
+    if(filename==='season-context.js')for(const dataFile of ['season-archives.js','archive-runtime.js'])vm.runInContext(fs.readFileSync(path.join(dir,dataFile),'utf8'),context,{filename:dataFile});
+  }
+  await new Promise(resolve=>setTimeout(resolve,50));
+  const q=selector=>w.document.querySelector(selector);
+  assert.equal(w.uelSeason.key,'2025-26');
+  assert.equal(w.document.querySelectorAll('#standings tr').length,36);
+  assert.match(q('.season-trigger').textContent,/2025 \/ 26/);
+  assert.match(q('#updatedAt').textContent,/2025\/26 完整静态归档/);
+  assert.match(q('#seasonDataStatus').textContent,/完整静态归档/);
+  assert.equal(w.document.querySelectorAll('#resultGrid .match').length,8);
+  q('.season-expand').click();assert.equal(w.document.querySelectorAll('#resultGrid .match').length,189);
+  q('#scheduleBtn').click();assert.equal(w.document.querySelectorAll('#scheduleGrid .fixture').length,144);
+  q('#advancementBtn').click();q('[data-tab="statistics"]').click();assert.equal(w.document.querySelectorAll('.season-cell').length,288);
+  assert.equal(fetches,0);
+  dom.window.close();
 });

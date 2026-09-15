@@ -1,6 +1,8 @@
 document.head.insertAdjacentHTML('beforeend','<link rel="stylesheet" href="enhancements.css"><link rel="stylesheet" href="result-clickable.css">');
-const teams=leagueTeams.map(([name,code])=>{const meta=uelTeamInfo(name)||{};return [uelNames[name]||name,name,code,0,0,0,0,0,0,0,'',meta.pot||0,meta.entry||'direct']});
-const matches=rawMatches.map(m=>[m[0],aliases[m[1]]||m[1],aliases[m[2]]||m[2],m[3],m[4],m[5]]).sort((a,b)=>b[0].localeCompare(a[0]));
+const officialStandings=new Map((window.uelOfficialStandings||[]).map(row=>[row.name,row]));
+const teams=leagueTeams.map(([name,code])=>{const meta=uelTeamInfo(name)||{},row=officialStandings.get(name);return [uelNames[name]||name,name,code,row?.p||0,row?.w||0,row?.d||0,row?.l||0,row?.gf||0,row?.ga||0,row?.pts||0,'',meta.pot||0,meta.entry||'direct']});
+if(officialStandings.size)teams.sort((a,b)=>officialStandings.get(a[1]).rank-officialStandings.get(b[1]).rank);
+const matches=rawMatches.map(m=>[m[0],window.uelCanonical(m[1]),window.uelCanonical(m[2]),m[3],m[4],m[5],m[6]||'',m[7]||null,m[8]||'',m[9]||'']).sort((a,b)=>b[0].localeCompare(a[0])||String(b[9]).localeCompare(String(a[9])));
 const display=n=>uelNames[n]||n;
 const tbody=document.querySelector('#standings');
 function render(q=''){tbody.innerHTML=teams.map((t,i)=>({t,i})).filter(({t})=>(t[0]+t[1]).toLowerCase().includes(q.toLowerCase())).map(({t,i})=>`<tr class="rank r${i+1} pot-row-${t[11]}" data-team="${t[1]}" tabindex="0"><td>${t[3]?i+1:'—'}</td><td class="team"><i class="badge">${t[2]}</i><span class="bilingual"><strong>${t[0]}</strong><small>${t[1]}</small></span><em class="entry-chip entry-${t[12]}">${uelEntryLabels[t[12]]}</em><em class="pot-chip">第${t[11]}档</em></td><td>${t[3]}</td><td>${t[4]}</td><td>${t[5]}</td><td>${t[6]}</td><td>${t[7]}–${t[8]}</td><td>${t[7]-t[8]>0?'+':''}${t[7]-t[8]}</td><td class="pts">${t[9]}</td><td><span class="form">${[...t[10]].map(x=>`<i class="${x.toLowerCase()}">${x==='W'?'胜':x==='D'?'平':'负'}</i>`).join('')||'—'}</span></td></tr>`).join('');}

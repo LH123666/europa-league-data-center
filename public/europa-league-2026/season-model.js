@@ -9,11 +9,11 @@
     const normalize = f => {
       const base = find(f);
       const stage = f.stage || (base ? 'league' : 'unknown');
-      return {...f, home:canonical(f.home), away:canonical(f.away), stage,
-        matchday: stage === 'league' ? (f.matchday || base?.matchday) : undefined};
+      return {...base,...f,home:canonical(f.home),away:canonical(f.away),stage,
+        matchday:stage==='league'?(f.matchday||base?.matchday):undefined,time:f.time||base?.time||'',note:f.note||base?.note||''};
     };
     const scheduled = [...baseline, ...fixtures].map(normalize);
-    const completed = rows.map(m => normalize({date:m[0],home:m[1],away:m[2],score:m[3],half:m[4],stage:m[5],round:m[6],matchday:m[7]})).filter(f => score(f.score));
+    const completed = rows.map(m => normalize({date:m[0],home:m[1],away:m[2],score:m[3],half:m[4],stage:m[5],round:m[6],matchday:m[7],note:m[8],time:m[9]})).filter(f => score(f.score));
     return unique([...scheduled, ...completed]);
   }
   function color(f) {

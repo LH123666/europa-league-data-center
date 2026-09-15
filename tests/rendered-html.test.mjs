@@ -44,7 +44,8 @@ test("Europa League data contains the complete official league phase and qualifi
   assert.match(liveUpdate, /renderUelAdvancement/);
   assert.match(liveUpdate, /uelDataSync\.mergeMatchRows/);
   assert.match(liveUpdate, /uelDataSync\.mergeFixtures/);
-  assert.match(liveUpdate, /renderSchedule\(\);\s*updateData\(true\)/);
+  assert.match(liveUpdate, /if\(window\.uelSeason\.current\)\{\s*updateData\(true\)/);
+  assert.match(liveUpdate, /uelDashboardUpdate\?\.\(\{archive:true/);
   assert.match(dataSync, /function mergeMatchRows/);
   assert.match(dataSync, /function mergeFixtures/);
   assert.match(advancement, /window\.renderUelAdvancement/);

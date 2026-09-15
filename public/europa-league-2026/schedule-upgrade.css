@@ -11,6 +11,7 @@
 #scheduleGrid .schedule-context em{font-size:10px;font-style:normal;line-height:1.5;padding:2px 5px;border-radius:3px;background:#fff0dd;color:#75522f;font-weight:500}
 #scheduleGrid .schedule-context .pot-1{background:#fff0b8;color:#795b0d}#scheduleGrid .schedule-context .pot-2{background:#e0f0ff;color:#2b6385}#scheduleGrid .schedule-context .pot-3{background:#eee1ff;color:#70458b}#scheduleGrid .schedule-context .pot-4{background:#def2e8;color:#28634b}#scheduleGrid .schedule-context .domestic{background:#eaf2fa;color:#355979}#scheduleGrid .schedule-context .europe{background:#eee8fa;color:#624197}#scheduleGrid .schedule-context .no-record{background:#f1efec;color:#716a63}#scheduleGrid .schedule-context .not-qualified{background:#fff0ef;color:#9a4d45}
 #scheduleGrid .fixture-more{opacity:1;margin-top:10px;font-size:11px;color:#aa511a}#scheduleGrid .fixture:focus-visible{outline:3px solid #e77820;outline-offset:-3px}
+#scheduleGrid .fixture-complete .fixture-teams>i{color:#fff;background:#5d2509;padding:5px 7px;min-width:48px;font-weight:900}#scheduleGrid .fixture-complete .fixture-teams>i b{font-size:14px}
 #scheduleMetadataNote{font-size:12px;line-height:1.8;color:#8b7058;margin:0 0 20px}#scheduleMetadataNote a{color:#a84d16;font-weight:700;margin-left:6px}
 @media(max-width:1100px){#scheduleGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){#schedulePage{width:calc(100% - 24px)}#scheduleGrid{grid-template-columns:1fr}#schedulePage .section-head{align-items:start;gap:12px;flex-direction:column}}
