@@ -7,6 +7,7 @@ import {createRequire} from 'node:module';
 const dir=path.resolve('public/europa-league-2026');
 function model(){const c=vm.createContext({window:{}});for(const file of ['matches-data.js','league-data.js','season-model.js'])vm.runInContext(fs.readFileSync(path.join(dir,file),'utf8'),c);return c.window;}
 test('36 clubs, 144 unique fixtures, 8 rounds of 18, 8 opponents per club',()=>{const w=model(),fs=w.uelSeasonModel.events([]);assert.equal(w.uelLeagueCatalog.length,36);assert.equal(fs.length,144);for(let i=1;i<=8;i++)assert.equal(fs.filter(f=>f.matchday===i).length,18);for(const t of w.uelLeagueCatalog)assert.equal(fs.filter(f=>[f.home,f.away].includes(t.name)).length,8);});
+test('Beijing conversion handles summer, winter, rollover and missing time',()=>{const c=vm.createContext({window:{}});vm.runInContext(fs.readFileSync(path.join(dir,'schedule-upgrade.js'),'utf8'),c);const convert=c.window.uelSchedule.beijing;assert.equal(JSON.stringify(convert('2026-09-16','18:45')),JSON.stringify({date:'2026-09-17',time:'00:45'}));assert.equal(JSON.stringify(convert('2026-11-05','21:00')),JSON.stringify({date:'2026-11-06',time:'04:00'}));assert.equal(convert('2026-12-31','21:00').date,'2027-01-01');assert.equal(convert('2026-09-16','待定'),null);});
 test('shared colors, stats deduplicate, postponed match retains official matchday',()=>{const w=model(),m=w.uelSeasonModel;const hi=w.uelLeagueCatalog.find(t=>t.pot===1).name,lo=w.uelLeagueCatalog.find(t=>t.pot===4).name;const f={home:hi,away:lo,score:'2-0',stage:'league'};assert.equal(m.color(f),'favorite');assert.equal(m.color({...f,score:'0-1'}),'upset');assert.equal(m.color({...f,score:'1-1'}),'upset');assert.equal(m.color({...f,away:hi,score:'1-1'}),'draw');assert.equal(m.color({...f,away:hi}),'equal');assert.equal(m.color({...f,away:'unknown'}),'neutral');assert.equal(m.stats([f,f]).played,1);assert.equal(m.stats([f,f]).goals,2);const b=w.uelLeagueFixtures[0];const e=m.events([['2026-10-01',b.home,b.away,'3-2','1-1','league']]);assert.equal(e.length,144);const found=e.find(x=>x.home===b.home&&x.away===b.away);assert.equal(found.matchday,b.matchday);assert.equal(found.date,'2026-10-01');assert.equal(m.stats([]).played,0);});
 test('dashboard navigation, matrix, latest expansion, status, preserved notes',async()=>{
   const require=createRequire(import.meta.url);let JSDOM;
@@ -22,6 +23,15 @@ test('dashboard navigation, matrix, latest expansion, status, preserved notes',a
   assert.equal(q('#latest').style.display,'none');q('#latestBtn').click();assert.equal(q('#latest').style.display,'block');assert.equal(q('.layout').style.display,'none');
   q('#advancementBtn').click();q('[data-tab="statistics"]').click();assert.equal(q('#seasonStatistics').hidden,false);assert.equal(q('#seasonQualification').hidden,true);assert.equal(w.document.querySelectorAll('.season-cell').length,288);
   q('#drawBtn').click();q('#scheduleBtn').click();assert.equal(q('#schedulePage').style.display,'block');assert.equal(q('#drawPage').style.display,'none');
+  assert.equal(w.document.querySelectorAll('#scheduleGrid .fixture').length,144);
+  assert.match(q('#fixtureCount').textContent,/北京时间/);assert.match(q('#scheduleGrid .fixture-date').textContent,/2026-09-17/);
+  assert.equal(w.document.querySelectorAll('#scheduleGrid .schedule-club').length,288);
+  assert.match(q('#scheduleGrid').textContent,/上季国内排名待核实/);
+  const scheduleFixture=q('#scheduleGrid .fixture');const sourceDate=scheduleFixture.dataset.date;
+  scheduleFixture.click();await new Promise(r=>setTimeout(r,30));assert.match(q('#drawerContent').textContent,/北京时间/);
+  q('.prediction-row select[data-field="result"]').value='home';q('.prediction-save').click();
+  const saved=JSON.parse(w.localStorage.getItem('uel36-match-predictions-v1'));assert.ok(Object.keys(saved).some(key=>key.startsWith(sourceDate+'|')));
+  assert.match(q('#scheduleGrid').textContent,/我的预测/);q('.match-modal-close').click();await new Promise(r=>setTimeout(r,0));
   vm.runInContext("matches.splice(0,matches.length,...uelLeagueFixtures.slice(0,12).map(f=>[f.date,f.home,f.away,'2-1','1-0','league']));renderResults();",context);assert.equal(w.document.querySelectorAll('#resultGrid .match').length,8);q('.season-expand').click();assert.equal(w.document.querySelectorAll('#resultGrid .match').length,12);q('.season-expand').click();assert.equal(w.document.querySelectorAll('#resultGrid .match').length,8);
   w.HTMLElement.prototype.scrollTo=function(options){this.scrollTop=options.top||0;};
   await w.openFixtureDetail('Milan','Sparta Prague','2026-09-16','18:45');
