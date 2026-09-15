@@ -33,7 +33,7 @@
     container.querySelector('.prediction-save').onclick=()=>{const saved=collectPredictionRows(container).filter(hasPrediction).slice(0,5);if(saved.length)predictions[key]=saved;else delete predictions[key];localStorage.setItem(predictionStorageKey,JSON.stringify(predictions));mountPredictionEditor(container,key,home,away,saved.length?saved:[emptyPrediction()]);renderSchedule();toast(saved.length?`已保存${saved.length}条预测`:'已清空本场预测')};
   };
   const canonical=n=>aliases[n]||n;
-  const toMatchRow=m=>[m.date,canonical(m.home),canonical(m.away),m.score,m.half||'—',m.stage||'qualifying'];
+  const toMatchRow=m=>[m.date,canonical(m.home),canonical(m.away),m.score.replace('–','-'),m.half||'—',m.stage||'unknown',m.round||'',m.matchday];
   const toFixture=f=>({...f,home:canonical(f.home),away:canonical(f.away)});
   const toast=msg=>{const el=document.querySelector('#dataToast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2500)};
   const rankColor=rank=>{const hue=12+(rank-1)*(208/Math.max(1,teams.length-1));return `hsl(${hue} 72% ${rank<9?48:43}%)`};
@@ -101,12 +101,13 @@
     updateInProgress=true;
     const btn=document.querySelector('#updateBtn');btn.classList.add('loading');btn.disabled=true;
     try{
-      const res=await fetch(`/api/uel-live?_=${Date.now()}`,{cache:'no-store'});
+      const res=await fetch(`/api/uel-live?_=${Date.now()}`,{cache:'no-store',signal:AbortSignal.timeout(90000)});
       if(!res.ok)throw new Error('HTTP '+res.status);const data=await res.json();
-      const beforeLatest=matches[0]?.[0]||'',beforeCount=matches.length;
+      if(!Array.isArray(data.matches)||!Array.isArray(data.fixtures)||data.matches.some(m=>!m.home||!m.away||!/^\d{4}-\d{2}-\d{2}$/.test(m.date)||!/^\d+[-–]\d+$/.test(m.score)))throw new Error('Invalid match response');
       if(data.matches?.length){const incomingMatches=data.matches.map(toMatchRow),mergedMatches=window.uelDataSync.mergeMatchRows(data.authoritative?[]:matches,incomingMatches);matches.splice(0,matches.length,...mergedMatches)}
       const fixtureBase=[...uelLeagueFixtures.map(toFixture),...allUpcoming];
       const remoteFixtures=Array.isArray(data.fixtures)?data.fixtures.map(toFixture):[];
+      window.uelRemoteFixtures=window.uelDataSync.mergeFixtures(window.uelRemoteFixtures||[],remoteFixtures,matches);
       allUpcoming=window.uelDataSync.mergeFixtures(fixtureBase,remoteFixtures,matches);
       const qualificationBaselineCurrent=String(data.sourceUpdatedAt||'')>='2026-08-27';
       if(qualificationBaselineCurrent&&data.ties?.length)uelQualifyingTies.splice(0,uelQualifyingTies.length,...data.ties);
@@ -116,16 +117,15 @@
       const checked=new Date(data.checkedAt||Date.now()).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
       const sourceDate=data.sourceUpdatedAt?new Date(`${data.sourceUpdatedAt}T12:00:00`).toLocaleDateString('zh-CN',{month:'numeric',day:'numeric'}):'未知';
       document.querySelector('#updatedAt').textContent=`检查于 ${checked} · 数据至 ${sourceDate}${data.stale?' · 缓存':''}`;
-      const playedPlayoffs=(data.playoffTies||[]).filter(t=>!Array.isArray(t)&&t.leg1&&t.leg1!=='待赛').length;
       const liveTitle=document.querySelector('.advance-live b'),liveDate=document.querySelector('.advance-live span');
-      if(liveTitle)liveTitle.textContent=playedPlayoffs?`附加赛已更新 ${playedPlayoffs} 场首回合`:'附加赛比赛日';
-      if(liveDate)liveDate.textContent=`赛果核对至 ${data.sourceUpdatedAt||'最近一次官方更新'}`;
+      if(liveTitle)liveTitle.textContent='资格赛数据';
+      if(liveDate)liveDate.textContent='来源与覆盖日期见顶部数据状态';
       const status=`${data.source}；官方数据更新至 ${sourceDate}${data.stale?'，在线源暂不可用，当前显示最近已验证数据':'，本次在线同步成功'}`;
       document.querySelector('.results .data-source-panel span').textContent=status;
       document.querySelector('#schedulePage .data-source-panel span').textContent=status;
-      const changed=matches.length>beforeCount||(matches[0]?.[0]||'')>beforeLatest;
-      if(!silent)toast(data.stale?`已检查：在线源暂不可用，保留截至 ${sourceDate} 的已验证数据`:changed?`已更新：${matches.length} 场赛果，${upcoming.length} 场待赛`:'已检查：当前已是最新数据');
-    }catch{renderSchedule();if(!silent)toast('在线更新失败，已保留本地完整赛程')}
+      const summary=window.uelDashboardUpdate?.(data,false);
+      if(!silent)toast(summary||'已检查数据，请查看各阶段数据状态');
+    }catch{renderSchedule();window.uelDashboardUpdate?.(null,true);if(!silent)toast('在线更新失败，已保留已有数据，请查看数据状态')}
     finally{updateInProgress=false;btn.classList.remove('loading');btn.disabled=false}
   }
   document.querySelector('#updateBtn').onclick=()=>updateData(false);

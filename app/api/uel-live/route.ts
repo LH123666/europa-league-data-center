@@ -3,8 +3,9 @@ const UEFA_TEXT_URL = `https://r.jina.ai/http://${UEFA_URL.replace(/^https?:\/\/
 const UEFA_MATCHES_URL = "https://match.uefa.com/v5/matches?competitionId=14&seasonYear=2027&order=ASC&offset=0&limit=250";
 const UEFA_MATCH_PAGE_URL = (offset:number)=>`https://match.uefa.com/v5/matches?competitionId=14&seasonYear=2027&order=ASC&offset=${offset}&limit=80`;
 
-type Match = { date: string; home: string; away: string; score: string; half: string; stage: "qualifying" | "league" };
-type Fixture = { date: string; time: string; home: string; away: string };
+type Stage = "qualifying" | "league" | "knockout" | "unknown";
+type Match = { date: string; home: string; away: string; score: string; half: string; stage: Stage; round?: string; matchday?: number };
+type Fixture = { date: string; time: string; home: string; away: string; stage?: Stage; round?: string; matchday?: number };
 type Tie = { round: string; path: string; a: string; b: string; leg1: string; leg2: string; total: string; winner: string };
 type PlayoffTie = Omit<Tie, "round" | "path">;
 type ParsedMatch = Match & { note: string; round: string };
@@ -113,15 +114,21 @@ function readPath(value:unknown,path:string[]):unknown{
   return cursor;
 }
 const readString=(value:unknown,path:string[])=>{const result=readPath(value,path);return typeof result==="string"?result:""};
-const readNumber=(value:unknown,path:string[])=>{const result=readPath(value,path);const parsed=typeof result==="number"?result:Number(result);return Number.isFinite(parsed)?parsed:undefined};
+const readNumber=(value:unknown,path:string[])=>{const result=readPath(value,path);if(result===null||result===undefined||result==='')return undefined;const parsed=typeof result==="number"?result:Number(result);return Number.isFinite(parsed)?parsed:undefined};
 
 function officialRound(value:string){
+  value=value.replace(/_/g,' ');
+  if(/knockout.*play|round of 32/i.test(value))return "淘汰赛附加赛";
+  if(/round of 16|eighth.?final/i.test(value))return "十六强";
+  if(/quarter.?final/i.test(value))return "四分之一决赛";
+  if(/semi.?final/i.test(value))return "半决赛";
+  if(/^final$/i.test(value))return "决赛";
   if(/first qualifying/i.test(value))return "第一轮";
   if(/second qualifying/i.test(value))return "第二轮";
   if(/third qualifying/i.test(value))return "第三轮";
   if(/play.?offs?|play-off round/i.test(value))return "附加赛";
   if(/league phase/i.test(value))return "联赛阶段";
-  return value||"联赛阶段";
+  return value||"轮次待确认";
 }
 
 function centralEuropeanDateTime(value:string,dateFallback:string){
@@ -146,17 +153,19 @@ function parseOfficialMatches(payload:unknown){
     if(!home||!away||!date)continue;
     const status=readString(item,["status"]).toUpperCase();
     const round=officialRound(readString(item,["round","translations","name","EN"])||readString(item,["round","metaData","type"]));
-    const stage=round==="联赛阶段"?"league":"qualifying";
+    const stage:Stage=round==="联赛阶段"?"league":["淘汰赛附加赛","十六强","四分之一决赛","半决赛","决赛"].includes(round)?"knockout":["第一轮","第二轮","第三轮","附加赛"].includes(round)?"qualifying":"unknown";
+    const matchday=stage==="league"?readNumber(item,["matchday","number"]):undefined;
     if(status==="FINISHED"){
       const homeScore=readNumber(item,["score","total","home"]),awayScore=readNumber(item,["score","total","away"]);
       if(homeScore===undefined||awayScore===undefined)continue;
       const halfHome=readNumber(item,["score","halfTime","home"]),halfAway=readNumber(item,["score","halfTime","away"]);
       const reason=readString(item,["winner","match","reason"]);let note="";
       if(/EXTRA_TIME/i.test(reason))note="aet";else if(/PENALT/i.test(reason))note="penalties";
-      matches.push({date,home,away,score:`${homeScore}-${awayScore}`,half:halfHome===undefined||halfAway===undefined?"—":`${halfHome}-${halfAway}`,stage,note,round});
-    }else if(status==="UPCOMING"||status==="SCHEDULED")fixtures.push({date,time:local.time,home,away});
+      matches.push({date,home,away,score:`${homeScore}-${awayScore}`,half:halfHome===undefined||halfAway===undefined?"—":`${halfHome}-${halfAway}`,stage,note,round,matchday});
+    }else if(status==="UPCOMING"||status==="SCHEDULED")fixtures.push({date,time:local.time,home,away,stage,round,matchday});
   }
   if(matches.length<60||matches.length+fixtures.length<200)throw new Error(`UEFA matches response incomplete (${matches.length} results, ${fixtures.length} fixtures)`);
+  if([...matches,...fixtures].some(item=>item.stage==='unknown'))throw new Error('UEFA returned an unrecognized competition round');
   matches.sort((a,b)=>b.date.localeCompare(a.date));
   fixtures.sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
   return {matches,fixtures,sourceUpdatedAt:matches[0]?.date||""};
@@ -181,6 +190,11 @@ async function fetchOfficialJson(){
     throw new Error(lastError||`UEFA matches page ${offset} unavailable`);
   };
   const pages=await Promise.all([0,80,160].map(fetchPage));
+  // Follow later pages too: a fixed 240-record cap loses late knockout matches.
+  for(let offset=240;pages.at(-1)?.length===80;offset+=80){
+    if(offset>=640)throw new Error('UEFA pagination exceeded season safety limit');
+    pages.push(await fetchPage(offset));
+  }
   return parseOfficialMatches(pages.flat());
 }
 
@@ -235,5 +249,6 @@ export async function GET(){
   const completed=new Set(matches.map(matchKey));
   const fixtures=[...new Map([...VERIFIED_FIXTURES,...officialFixtures].filter(item=>!completed.has(matchKey(item))).map(item=>[matchKey(item),item])).values()].sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
   matches.sort((a,b)=>b.date.localeCompare(a.date));
-  return Response.json({source,sourceUrl:UEFA_MATCHES_URL,live,authoritative,stale:!live,checkedAt:new Date().toISOString(),sourceUpdatedAt,matches,ties,playoffTies,fixtures,sourceErrors,counts:{results:matches.length,fixtures:fixtures.length}},{headers:{"Cache-Control":"no-store, max-age=0, must-revalidate","Content-Type":"application/json; charset=utf-8","X-Content-Type-Options":"nosniff"}});
+  const coverage={qualifying:live,league:live&&authoritative,knockout:live&&authoritative};
+  return Response.json({source,sourceUrl:authoritative?UEFA_MATCHES_URL:UEFA_URL,live,authoritative,coverage,stale:!live,checkedAt:new Date().toISOString(),sourceUpdatedAt,matches,ties,playoffTies,fixtures,sourceErrors,counts:{results:matches.length,fixtures:fixtures.length}},{headers:{"Cache-Control":"no-store, max-age=0, must-revalidate","Content-Type":"application/json; charset=utf-8","X-Content-Type-Options":"nosniff"}});
 }

@@ -1,6 +1,7 @@
 (function(root){
-  const matchKey=row=>`${row[0]}|${row[1]}|${row[2]}`;
-  const fixtureKey=row=>`${row.date}|${row.home}|${row.away}`;
+  // A rescheduled game is the same event; the home/away orientation identifies each leg.
+  const matchKey=row=>`${row[5]||'unknown'}|${row[1]}|${row[2]}`;
+  const fixtureKey=row=>`${row.stage||'unknown'}|${row.home}|${row.away}`;
 
   function mergeMatchRows(current,incoming){
     const merged=new Map((current||[]).map(row=>[matchKey(row),row]));
