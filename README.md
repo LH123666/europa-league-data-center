@@ -236,6 +236,29 @@ For local Pages verification, run `npx wrangler pages dev public`.
 - `index.html` 增加共享样式并更新缓存版本。测试断言赛程144场/288个参赛路径标签、赛果默认8场/16个双方标签块及档位、国内资格、欧战成绩类名；静态测试校验九类色板的关键色值。
 - 验证：`npm test` 11项通过，`node --test tests/uel-season.test.mjs` 5项通过，`node --check` 和 `git diff --check` 通过。本次不修改比赛、积分、半场比分或球队背景资料。
 
+## 2026-09-18 · 2026/27联赛阶段36队队徽全站接入
+
+### 用户可见变化
+
+1. 2026/27联赛阶段36支球队全部使用真实队徽，不再只显示三字母缩写。覆盖积分榜、抽签球队卡及对手列表、最新赛果、未来赛程、球队详情、比赛详情、历史交锋/赛季赛程、比赛弹层双列积分榜、联赛阶段全景矩阵、资格赛和资格赛晋级图。
+2. 队徽按信息密度分为16、22、30、38和72像素五档：矩阵单元格使用最小尺寸，赛果/赛程使用中等尺寸，球队详情使用大队徽。所有图片保持原比例并置于浅色圆形底板，避免透明或狭长队徽难以辨认。
+3. 图片加载失败或球队不在当前36队资源包内时，自动保留文字缩写。资格赛中的其他球队以及历史赛季未匹配球队不会错误套用当前赛季队徽；当前36队在历史数据中名称准确匹配时可复用同一俱乐部标识。
+
+### 资源与实现
+
+- 原始资源由用户提供，位置为 `C:\Users\Egg10\Desktop\36footbool\europa_2026_27_logos`。原目录同时包含SVG、256px PNG和128px WebP；部署选择36个WebP，总体积约212 KB，以减少Cloudflare Pages静态资源和首次加载成本。
+- 部署资源位于 `public/europa-league-2026/assets/team-logos/2026-27/`，同时保留 `manifest.csv` 和 `teams.json` 以便其他电脑核对中英文名、slug、原始文件和来源路径。
+- 新增 `club-logos.js` 作为唯一队名映射和HTML生成入口，统一处理 `Leverkusen / Bayer Leverkusen`、`Milan / AC Milan`、`Dinamo Zagreb / GNK Dinamo Zagreb`、`Union Saint-Gilloise / Union SG` 等别名，并提供加载失败回退。
+- 新增 `club-logos.css` 统一尺寸、圆形底板、图片适配、详情标题和密集矩阵布局；`index.html` 在业务脚本之前加载队徽映射，并使用缓存版本参数。
+- 接入文件包括 `app.js`、`schedule-upgrade.js`、`season-dashboard.js`、`league-ui.js`、`live-update.js`、`match-modal.js`、`qualification.js` 和 `advancement.js`。未修改球队名单、比赛赛果、积分、半场比分、参赛路径、预测或备注存储。
+
+### 验证与限制
+
+- `node --test tests/uel-season.test.mjs` 6项通过：新增36/36映射与文件存在性校验，并断言积分榜36个、赛程288个、最近赛果16个、矩阵36个行队徽和288个对手队徽、比赛弹层36个积分榜队徽均正常生成；2025/26归档继续独立运行且不请求当前赛季接口。
+- `npm test` 11项通过：vinext/Cloudflare构建、API、分页、半场比分重建及2024/25、2025/26历史归档测试全部通过。所有修改后的浏览器脚本通过 `node --check`，`git diff --check` 通过。
+- 本次资源包只完整覆盖2026/27联赛阶段36队。资格赛其他球队及历史赛季其余球队使用缩写回退；若以后补充历史队徽，应新建赛季资源目录并扩展映射，不覆盖本目录。
+- 推送 `main` 后继续使用既有Cloudflare Pages Git部署；发布后核对线上 `club-logos.js`、`club-logos.css` 和至少一张WebP资源，浏览器旧缓存可用强制刷新更新。
+
 ## Learn More
 
 - [vinext Documentation](https://github.com/cloudflare/vinext)
