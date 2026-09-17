@@ -1,0 +1,10 @@
+.schedule-context em{padding:2px 5px;border-radius:3px;font-size:10px;font-style:normal;font-weight:500;line-height:1.5;background:#f1efec;color:#716a63}
+.schedule-context .entry{background:#fff0dd;color:#75522f}
+.schedule-context .pot-1{background:#fff0b8;color:#795b0d}
+.schedule-context .pot-2{background:#e0f0ff;color:#2b6385}
+.schedule-context .pot-3{background:#eee1ff;color:#70458b}
+.schedule-context .pot-4{background:#def2e8;color:#28634b}
+.schedule-context .domestic{background:#eaf2fa;color:#355979}
+.schedule-context .europe{background:#eee8fa;color:#624197}
+.schedule-context .no-record{background:#f1efec;color:#716a63}
+.schedule-context .not-qualified{background:#fff0ef;color:#9a4d45}

@@ -23,7 +23,7 @@ test("server renders the data-center entry page", async () => {
 });
 
 test("Europa League data contains the complete official league phase and qualifiers", async () => {
-  const [data, leagueData, liveUpdate, dataSync, advancement, qualification, api] = await Promise.all([
+  const [data, leagueData, liveUpdate, dataSync, advancement, qualification, api, clubContext] = await Promise.all([
     readFile(new URL("../public/europa-league-2026/qualification-data.js", import.meta.url), "utf8"),
     readFile(new URL("../public/europa-league-2026/league-data.js", import.meta.url), "utf8"),
     readFile(new URL("../public/europa-league-2026/live-update.js", import.meta.url), "utf8"),
@@ -31,6 +31,7 @@ test("Europa League data contains the complete official league phase and qualifi
     readFile(new URL("../public/europa-league-2026/advancement.js", import.meta.url), "utf8"),
     readFile(new URL("../public/europa-league-2026/qualification.js", import.meta.url), "utf8"),
     readFile(new URL("../app/api/uel-live/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../public/europa-league-2026/club-context.css", import.meta.url), "utf8"),
   ]);
   assert.match(data, /Egnatia',leg1:'3–1',leg2:'5–1',total:'4–6',winner:'Egnatia'/);
   assert.match(data, /Anderlecht',leg1:'0–1',leg2:'3–2',total:'2–4',winner:'Anderlecht'/);
@@ -66,6 +67,12 @@ test("Europa League data contains the complete official league phase and qualifi
   assert.match(api, /authoritative/);
   assert.match(api, /"L\. Red Imps":"Lincoln Red Imps"/);
   assert.match(api, /stale:!live/);
+  assert.match(clubContext, /\.schedule-context \.entry\{background:#fff0dd;color:#75522f\}/);
+  assert.match(clubContext, /\.schedule-context \.pot-1\{background:#fff0b8;color:#795b0d\}/);
+  assert.match(clubContext, /\.schedule-context \.pot-4\{background:#def2e8;color:#28634b\}/);
+  assert.match(clubContext, /\.schedule-context \.domestic\{background:#eaf2fa;color:#355979\}/);
+  assert.match(clubContext, /\.schedule-context \.europe\{background:#eee8fa;color:#624197\}/);
+  assert.match(clubContext, /\.schedule-context \.not-qualified\{background:#fff0ef;color:#9a4d45\}/);
 });
 
 test("Europa League live merging never removes newer local data or official fixtures", async () => {

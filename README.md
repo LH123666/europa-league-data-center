@@ -228,6 +228,14 @@ For local Pages verification, run `npx wrangler pages dev public`.
 - 新增及修改的浏览器 JavaScript 均通过 `node --check`；vinext/Cloudflare 构建通过。仓库整体 `tsc --noEmit` 仍会因现有 `cloudflare:workers`、`Fetcher` 和 `D1Database` 类型未在全局 TypeScript 环境声明而报错，与本次 API 逻辑无关。
 - 资格赛“本轮新加入”表示该队未出现在上一轮欧罗巴对阵；除已有 UEFA 精确路径数据的第三轮外，不额外猜测其为国内直通或欧冠转入。
 
+## 2026-09-18 · 赛程与赛果球队信息标签共享配色
+
+- 原因：赛程标签的颜色规则仅对 `#scheduleGrid` 生效，而赛果卡片又使用统一白底覆盖，导致信息文字存在但失去分类色。
+- 新增 `club-context.css`作为两个页面的唯一标签色板：第1档黄、第2档蓝、第3档紫、第4档绿；参赛路径橙、国内资格蓝、上季欧战紫、无欧战记录灰、未晋级欧战红。
+- `schedule-upgrade.js` 为参赛路径增加语义化 `entry` 类；`schedule-upgrade.css` 仅保留赛程布局/字号；`season-dashboard.css` 移除赛果标签的白底颜色覆盖，只保留紧凑尺寸。主客队对齐、赛果胜负卡片背景及手机换行规则不变。
+- `index.html` 增加共享样式并更新缓存版本。测试断言赛程144场/288个参赛路径标签、赛果默认8场/16个双方标签块及档位、国内资格、欧战成绩类名；静态测试校验九类色板的关键色值。
+- 验证：`npm test` 11项通过，`node --test tests/uel-season.test.mjs` 5项通过，`node --check` 和 `git diff --check` 通过。本次不修改比赛、积分、半场比分或球队背景资料。
+
 ## Learn More
 
 - [vinext Documentation](https://github.com/cloudflare/vinext)
