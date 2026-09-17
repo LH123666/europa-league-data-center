@@ -33,7 +33,7 @@
     container.querySelector('.prediction-save').onclick=()=>{const saved=collectPredictionRows(container).filter(hasPrediction).slice(0,5);if(saved.length)predictions[key]=saved;else delete predictions[key];localStorage.setItem(predictionStorageKey,JSON.stringify(predictions));mountPredictionEditor(container,key,home,away,saved.length?saved:[emptyPrediction()]);renderSchedule();toast(saved.length?`已保存${saved.length}条预测`:'已清空本场预测')};
   };
   const canonical=n=>aliases[n]||n;
-  const toMatchRow=m=>[m.date,canonical(m.home),canonical(m.away),m.score.replace('–','-'),m.half||'—',m.stage||'unknown',m.round||'',m.matchday,m.note||'',m.time||''];
+  const toMatchRow=m=>[m.date,canonical(m.home),canonical(m.away),m.score.replace('–','-'),m.half||'—',m.stage||'unknown',m.round||'',m.matchday,m.note||'',m.time||'',m.halfSource||'unverified'];
   const toFixture=f=>({...f,home:canonical(f.home),away:canonical(f.away)});
   const toast=msg=>{const el=document.querySelector('#dataToast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2500)};
   const rankColor=rank=>{const hue=12+(rank-1)*(208/Math.max(1,teams.length-1));return `hsl(${hue} 72% ${rank<9?48:43}%)`};

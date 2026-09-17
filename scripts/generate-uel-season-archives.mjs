@@ -79,16 +79,22 @@ const roundInfo=value=>{
   throw new Error(`Unrecognized UEFA round: ${raw}`);
 };
 const halfTimeFor=match=>{
+  const final=match?.score?.total||match?.score?.regular||{};
+  const direct=match?.score?.halfTime;
+  if(direct?.home!=null&&direct?.away!=null&&Number.isFinite(Number(direct.home))&&Number.isFinite(Number(direct.away)))return {score:`${Number(direct.home)}-${Number(direct.away)}`,source:'official'};
+  if(Number(final.home)===0&&Number(final.away)===0)return {score:'0-0',source:'zero-zero'};
   const scorers=match?.playerEvents?.scorers;
-  if(!Array.isArray(scorers))return '—';
+  if(!Array.isArray(scorers))return {score:'—',source:'unverified'};
   let home=0,away=0;
   for(const event of scorers){
     if(event?.phase!=='FIRST_HALF')continue;
-    const own=/OWN_GOAL/i.test(event?.goalType||'');
+    const own=/^OWN(?:_GOAL)?$/i.test(event?.goalType||'');
     const belongsHome=String(event?.teamId)===String(match?.homeTeam?.id);
     if(own?(belongsHome?false:true):belongsHome)home++;else away++;
   }
-  return `${home}-${away}`;
+  const recognized=scorers.filter(event=>event&&event.teamId!=null).length;
+  if(recognized!==Number(final.home)+Number(final.away)||home>Number(final.home)||away>Number(final.away))return {score:'—',source:'unverified'};
+  return {score:`${home}-${away}`,source:'events'};
 };
 const resultNote=match=>{
   const parts=[];
@@ -129,10 +135,11 @@ async function buildArchive(key,config){
   const names={},codes={},logos={},aliasesOut={};
   const normalized=payload.map(match=>{
     const home=teamName(match.homeTeam),away=teamName(match.awayTeam),info=roundInfo(match?.round?.metaData?.name||match?.round?.translations?.name?.EN),dt=dateTimeFor(match);
+    const half=halfTimeFor(match);
     aliasesOut[match.homeTeam?.internationalName||home]=home;aliasesOut[match.awayTeam?.internationalName||away]=away;
     names[home]=teamChinese(match.homeTeam);names[away]=teamChinese(match.awayTeam);codes[home]=codeFor(match.homeTeam);codes[away]=codeFor(match.awayTeam);
     logos[home]=match.homeTeam?.logoUrl||'';logos[away]=match.awayTeam?.logoUrl||'';
-    return {id:String(match.id),date:dt.date,time:dt.time,home,away,score:scoreText(match.score?.total||match.score?.regular),half:halfTimeFor(match),stage:info.stage,round:info.label,matchday:info.stage==='league'?Number(match?.matchday?.sequenceNumber||match?.matchday?.name?.match(/\d+/)?.[0]||0):undefined,note:resultNote(match),winner:winnerName(match),roundId:String(match?.round?.id||'')};
+    return {id:String(match.id),date:dt.date,time:dt.time,home,away,score:scoreText(match.score?.total||match.score?.regular),half:half.score,halfSource:half.source,stage:info.stage,round:info.label,matchday:info.stage==='league'?Number(match?.matchday?.sequenceNumber||match?.matchday?.name?.match(/\d+/)?.[0]||0):undefined,note:resultNote(match),winner:winnerName(match),roundId:String(match?.round?.id||'')};
   });
   const unknown=normalized.filter(row=>!row.score);
   if(unknown.length)throw new Error(`${key}: ${unknown.length} matches are missing a final score`);
@@ -150,10 +157,10 @@ async function buildArchive(key,config){
   const finalStandings=(standingGroup?.items||[]).map(item=>({name:teamName(item.team),rank:Number(item.rank),p:Number(item.played),w:Number(item.won),d:Number(item.drawn),l:Number(item.lost),gf:Number(item.goalsFor),ga:Number(item.goalsAgainst),pts:Number(item.points)})).sort((a,b)=>a.rank-b.rank);
   if(finalStandings.length!==36)throw new Error(`${key}: official standings contain ${finalStandings.length} rows`);
   const catalog=potTeams.map(name=>{const pot=Number(Object.entries(pots).find(([,rows])=>rows.includes(name))?.[0]);const qualified=normalized.some(row=>row.stage==='qualifying'&&[row.home,row.away].includes(name));return {id:name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''),name,zh:names[name]||manualChinese[name]||name,code:codes[name]||name.slice(0,3).toUpperCase(),logo:logos[name]||'',pot,entry:qualified?'uel':'direct'};});
-  const fixtures=league.map(row=>({date:row.date,time:row.time,home:row.home,away:row.away,matchday:row.matchday,stage:'league',score:row.score,half:row.half,note:row.note})).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  const fixtures=league.map(row=>({date:row.date,time:row.time,home:row.home,away:row.away,matchday:row.matchday,stage:'league',score:row.score,half:row.half,halfSource:row.halfSource,note:row.note})).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
   const draw=Object.fromEntries(catalog.map(team=>[team.name,[]]));
   for(const fixture of fixtures){draw[fixture.home].push({date:fixture.date,time:fixture.time,matchday:fixture.matchday,venue:'home',opponent:fixture.away,score:fixture.score});draw[fixture.away].push({date:fixture.date,time:fixture.time,matchday:fixture.matchday,venue:'away',opponent:fixture.home,score:fixture.score});}
-  const matches=normalized.map(row=>[row.date,row.home,row.away,row.score,row.half,row.stage,row.round,row.matchday||null,row.note,row.time]).sort((a,b)=>b[0].localeCompare(a[0])||String(b[9]).localeCompare(String(a[9])));
+  const matches=normalized.map(row=>[row.date,row.home,row.away,row.score,row.half,row.stage,row.round,row.matchday||null,row.note,row.time,row.halfSource]).sort((a,b)=>b[0].localeCompare(a[0])||String(b[9]).localeCompare(String(a[9])));
   const qualifyingTies=['第一轮','第二轮','第三轮'].flatMap(round=>buildTies(normalized,round)),playoffTies=buildTies(normalized,'附加赛');
   const finalMatch=normalized.find(row=>row.round==='决赛');
   if(!finalMatch||finalMatch.date!==config.final.date||finalMatch.winner!==config.final.champion)throw new Error(`${key}: final validation failed`);

@@ -4,7 +4,8 @@ const UEFA_MATCHES_URL = "https://match.uefa.com/v5/matches?competitionId=14&sea
 const UEFA_MATCH_PAGE_URL = (offset:number)=>`https://match.uefa.com/v5/matches?competitionId=14&seasonYear=2027&order=ASC&offset=${offset}&limit=80`;
 
 type Stage = "qualifying" | "league" | "knockout" | "unknown";
-type Match = { date: string; home: string; away: string; score: string; half: string; stage: Stage; round?: string; matchday?: number };
+type HalfSource = "official" | "events" | "zero-zero" | "unverified";
+type Match = { date: string; time?: string; home: string; away: string; score: string; half: string; halfSource?: HalfSource; stage: Stage; round?: string; matchday?: number };
 type Fixture = { date: string; time: string; home: string; away: string; stage?: Stage; round?: string; matchday?: number };
 type Tie = { round: string; path: string; a: string; b: string; leg1: string; leg2: string; total: string; winner: string };
 type PlayoffTie = Omit<Tie, "round" | "path">;
@@ -116,6 +117,25 @@ function readPath(value:unknown,path:string[]):unknown{
 const readString=(value:unknown,path:string[])=>{const result=readPath(value,path);return typeof result==="string"?result:""};
 const readNumber=(value:unknown,path:string[])=>{const result=readPath(value,path);if(result===null||result===undefined||result==='')return undefined;const parsed=typeof result==="number"?result:Number(result);return Number.isFinite(parsed)?parsed:undefined};
 
+function deriveHalfTime(item:JsonRecord,homeScore:number,awayScore:number):{score:string;source:HalfSource}{
+  const officialHome=readNumber(item,["score","halfTime","home"]),officialAway=readNumber(item,["score","halfTime","away"]);
+  if(officialHome!==undefined&&officialAway!==undefined&&officialHome<=homeScore&&officialAway<=awayScore)return {score:`${officialHome}-${officialAway}`,source:"official"};
+  // A goalless full-time result is also necessarily goalless at half-time.
+  if(homeScore===0&&awayScore===0)return {score:"0-0",source:"zero-zero"};
+  const scorers=readPath(item,["playerEvents","scorers"]);
+  if(!Array.isArray(scorers))return {score:"—",source:"unverified"};
+  const homeId=readPath(item,["homeTeam","id"]);let home=0,away=0,recognized=0;
+  for(const raw of scorers){
+    if(!isRecord(raw))continue;
+    const teamId=raw.teamId,goalType=typeof raw.goalType==="string"?raw.goalType:"",belongsHome=String(teamId)===String(homeId),own=/^OWN(?:_GOAL)?$/i.test(goalType);
+    recognized++;
+    if(raw.phase==="FIRST_HALF"){if(own?!belongsHome:belongsHome)home++;else away++;}
+  }
+  // Only reconstruct when UEFA's event list reconciles with the final score.
+  if(recognized!==homeScore+awayScore||home>homeScore||away>awayScore)return {score:"—",source:"unverified"};
+  return {score:`${home}-${away}`,source:"events"};
+}
+
 function officialRound(value:string){
   value=value.replace(/_/g,' ');
   if(/knockout.*play|round of 32/i.test(value))return "淘汰赛附加赛";
@@ -158,10 +178,10 @@ function parseOfficialMatches(payload:unknown){
     if(status==="FINISHED"){
       const homeScore=readNumber(item,["score","total","home"]),awayScore=readNumber(item,["score","total","away"]);
       if(homeScore===undefined||awayScore===undefined)continue;
-      const halfHome=readNumber(item,["score","halfTime","home"]),halfAway=readNumber(item,["score","halfTime","away"]);
+      const half=deriveHalfTime(item,homeScore,awayScore);
       const reason=readString(item,["winner","match","reason"]);let note="";
       if(/EXTRA_TIME/i.test(reason))note="aet";else if(/PENALT/i.test(reason))note="penalties";
-      matches.push({date,home,away,score:`${homeScore}-${awayScore}`,half:halfHome===undefined||halfAway===undefined?"—":`${halfHome}-${halfAway}`,stage,note,round,matchday});
+      matches.push({date,time:local.time,home,away,score:`${homeScore}-${awayScore}`,half:half.score,halfSource:half.source,stage,note,round,matchday});
     }else if(status==="UPCOMING"||status==="SCHEDULED")fixtures.push({date,time:local.time,home,away,stage,round,matchday});
   }
   if(matches.length<60||matches.length+fixtures.length<200)throw new Error(`UEFA matches response incomplete (${matches.length} results, ${fixtures.length} fixtures)`);

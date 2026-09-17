@@ -28,6 +28,8 @@ for(const [key,expected] of Object.entries({
     assert.ok(Object.values(archive.pots).every(pot=>pot.length===9));
     assert.equal(archive.leagueFixtures.length,144);
     assert.ok(archive.leagueFixtures.every(match=>/^\d+-\d+$/.test(match.score)));
+    assert.ok(archive.matches.every(match=>/^\d+-\d+$/.test(match[4])),`${key} contains an unverified halftime score`);
+    assert.ok(archive.matches.every(match=>['official','events','zero-zero'].includes(match[10])),`${key} contains an unknown halftime source`);
 
     const appearances=new Map(archive.catalog.map(team=>[team.name,0]));
     const matchdays=Array.from({length:8},()=>0);

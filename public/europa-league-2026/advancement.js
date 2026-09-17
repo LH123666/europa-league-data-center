@@ -11,18 +11,28 @@
   <section class="advance-drop"><b>落败球队去向</b><span>第三轮落败 → 欧协联附加赛</span><span>附加赛落败 → 欧协联联赛阶段</span><span>不再回到欧罗巴联赛</span></section>
   <footer class="advance-source"><div><b>说明</b><span>每张卡片分别显示首回合、次回合和总比分；四轮资格赛均已结束。</span></div><a href="https://www.uefa.com/uefaeuropaleague/news/02a6-20e5db0029dd-8241a8d00925-1000--europa-league-qualifying-fixtures-dates-how-it-works/" target="_blank" rel="noopener">UEFA 官方资格赛页面 →</a></footer>`;
   document.querySelector('main').appendChild(page);
-  const originClass=club=>{const origin=uelThirdRoundOrigins[club]||'';return origin.includes('冠军路径')?'origin-ucl-champions':origin.includes('主路径淘汰')?'origin-ucl-league':origin.includes('欧罗巴资格赛第二轮')?'origin-uel-round2':origin.includes('直接参赛')?'origin-direct':'origin-pending'};
-  const team=(club,win)=>`<span class="advance-team ${win?'winner':''}"><span class="team-name-origin"><strong>${name(club)}</strong><small class="team-origin ${originClass(club)}">${uelThirdRoundOrigins[club]||(season.current?'来源待确认':'历史参赛路径未分类')}</small></span></span>`;
-  const compactTie=t=>`<article class="lane-tie"><div class="tie-leg"><span>首回合</span><small>${name(t.a)}主场</small></div><div class="lane-team ${t.winner===t.a?'winner':''}"><b>${name(t.a)}<em>主</em></b><strong>${t.leg1}</strong></div><div class="tie-leg second"><span>次回合</span><small>${name(t.b)}主场</small></div><div class="lane-team ${t.winner===t.b?'winner':''}"><b>${name(t.b)}<em>主</em></b><strong>${t.leg2}</strong></div><footer><span class="lane-path">${t.path}</span><span>总比分 ${t.total}</span><b>${name(t.winner)} 晋级</b></footer></article>`;
+  const roundOrder=['第一轮','第二轮','第三轮','附加赛'];
+  const tiesFor=round=>round==='附加赛'?uelPlayoffTies:uelQualifyingTies.filter(t=>t.round===round);
+  const winnersFor=round=>new Set(tiesFor(round).map(t=>Array.isArray(t)?'':t.winner).filter(Boolean));
+  function originFor(club,round){
+    const index=roundOrder.indexOf(round),previous=index>0?roundOrder[index-1]:'';
+    if(previous&&winnersFor(previous).has(club))return `欧罗巴资格赛${previous}晋级`;
+    if(round==='第三轮'&&uelThirdRoundOrigins[club])return uelThirdRoundOrigins[club];
+    return `${round}新加入`;
+  }
+  const originClass=origin=>origin.includes('冠军路径')?'origin-ucl-champions':origin.includes('主路径淘汰')?'origin-ucl-league':origin.includes('晋级')?'origin-uel-round2':origin.includes('新加入')||origin.includes('直接参赛')?'origin-direct':'origin-pending';
+  const originBadge=(club,round)=>{const origin=originFor(club,round);return `<small class="team-origin ${originClass(origin)}" title="${origin}">${origin}</small>`;};
+  const team=(club,win,round)=>`<span class="advance-team ${win?'winner':''}"><span class="team-name-origin"><strong>${name(club)}</strong>${originBadge(club,round)}</span></span>`;
+  const compactTie=t=>`<article class="lane-tie"><div class="tie-leg"><span>首回合</span><small>${name(t.a)}主场</small></div><div class="lane-team ${t.winner===t.a?'winner':''}"><span class="team-name-origin"><b>${name(t.a)}<em>主</em></b>${originBadge(t.a,t.round)}</span><strong>${t.leg1}</strong></div><div class="tie-leg second"><span>次回合</span><small>${name(t.b)}主场</small></div><div class="lane-team ${t.winner===t.b?'winner':''}"><span class="team-name-origin"><b>${name(t.b)}<em>主</em></b>${originBadge(t.b,t.round)}</span><strong>${t.leg2}</strong></div><footer><span class="lane-path">${t.path}</span><span>总比分 ${t.total}</span><b>${name(t.winner)} 晋级</b></footer></article>`;
   function renderAdvancement(){
     page.querySelector('#uelAdvanceRound1').innerHTML=uelQualifyingTies.filter(t=>t.round==='第一轮').map(compactTie).join('');
     page.querySelector('#uelAdvanceRound2').innerHTML=uelQualifyingTies.filter(t=>t.round==='第二轮').map(compactTie).join('');
-    page.querySelector('#uelAdvanceRound3').innerHTML=uelQualifyingTies.filter(t=>t.round==='第三轮').map(t=>`<article class="advance-tie ${t.winner?'done':'active-tie'}"><span class="advance-path ${t.path==='主路径'?'league':''}">${t.path}</span>${team(t.a,t.winner===t.a)}<div class="leg-score-grid"><span><small>首回合 · ${name(t.a)}主场</small><b>${t.leg1}</b></span><span><small>次回合 · ${name(t.b)}主场</small><b>${t.leg2}</b></span><span class="aggregate"><small>两回合总比分</small><b>${t.total}</b></span></div>${team(t.b,t.winner===t.b)}<footer><span>${t.winner?'两回合结束':'次回合待赛'}</span><b>${t.winner?`${name(t.winner)} 晋级`:'胜者进入附加赛'}</b></footer></article>`).join('');
+    page.querySelector('#uelAdvanceRound3').innerHTML=uelQualifyingTies.filter(t=>t.round==='第三轮').map(t=>`<article class="advance-tie ${t.winner?'done':'active-tie'}"><span class="advance-path ${t.path==='主路径'?'league':''}">${t.path}</span>${team(t.a,t.winner===t.a,t.round)}<div class="leg-score-grid"><span><small>首回合 · ${name(t.a)}主场</small><b>${t.leg1}</b></span><span><small>次回合 · ${name(t.b)}主场</small><b>${t.leg2}</b></span><span class="aggregate"><small>两回合总比分</small><b>${t.total}</b></span></div>${team(t.b,t.winner===t.b,t.round)}<footer><span>${t.winner?'两回合结束':'次回合待赛'}</span><b>${t.winner?`${name(t.winner)} 晋级`:'胜者进入附加赛'}</b></footer></article>`).join('');
     page.querySelector('#uelAdvancePlayoffs').innerHTML=uelPlayoffTies.map(raw=>{
       const t=Array.isArray(raw)?{a:raw[0],b:raw[1],leg1:'待赛',leg2:'待赛',total:'VS',winner:''}:raw;
       const firstPlayed=t.leg1&&t.leg1!=='待赛',secondPlayed=t.leg2&&t.leg2!=='待赛';
       const state=t.winner?'两回合结束':secondPlayed?'等待官方确认晋级结果':firstPlayed?'首回合结束 · 次回合8月27日':'首回合8月20日 · 次回合8月27日';
-      return `<article class="advance-tie playoff ${t.winner?'done':'active-tie'}">${team(t.a,t.winner===t.a)}<div class="leg-score-grid"><span><small>首回合 · ${name(t.a)}主场</small><b>${t.leg1||'待赛'}</b></span><span><small>次回合 · ${name(t.b)}主场</small><b>${t.leg2||'待赛'}</b></span><span class="aggregate"><small>${t.winner?'两回合总比分':'当前总比分'}</small><b>${t.total||'VS'}</b></span></div>${team(t.b,t.winner===t.b)}<footer><span>${state}</span><b>${t.winner?`${name(t.winner)} 晋级`:'胜者进联赛阶段'}</b></footer></article>`;
+      return `<article class="advance-tie playoff ${t.winner?'done':'active-tie'}">${team(t.a,t.winner===t.a,'附加赛')}<div class="leg-score-grid"><span><small>首回合 · ${name(t.a)}主场</small><b>${t.leg1||'待赛'}</b></span><span><small>次回合 · ${name(t.b)}主场</small><b>${t.leg2||'待赛'}</b></span><span class="aggregate"><small>${t.winner?'两回合总比分':'当前总比分'}</small><b>${t.total||'VS'}</b></span></div>${team(t.b,t.winner===t.b,'附加赛')}<footer><span>${state}</span><b>${t.winner?`${name(t.winner)} 晋级`:'胜者进联赛阶段'}</b></footer></article>`;
     }).join('');
   }
   window.renderUelAdvancement=renderAdvancement;

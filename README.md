@@ -204,6 +204,30 @@ For local Pages verification, run `npx wrangler pages dev public`.
 - 验证：7项自动化测试通过；检查官方上下文恰好覆盖36队，赛程144场/288个球队信息块均不再出现待核实，并专项断言德甲第6、欧冠十六强、无欧战记录与未晋级欧战的区分。JS语法、TypeScript接口检查及diff检查通过。
 - README与代码同次提交main，推送前再次fetch；由已有Cloudflare Pages Git集成部署，发布后检查线上HTML与新版资源。
 
+## 2026-09-18 · 赛果详情、半场比分与资格赛来源补全
+
+### 用户可见变化
+
+1. “最新赛果”卡片恢复与“赛程安排”一致的球队信息：中英文队名、抽签档位、欧罗巴参赛路径、2025/26国内资格依据、上季欧战表现，并增加阶段/轮次、北京时间、半场数据来源和加时/点球备注。胜负配色、三列桌面布局、默认8场与展开全部保持不变。
+2. 半场比分不再仅依赖官方响应中经常缺失的 `score.halfTime`：优先使用官方半场字段，其次用完整进球事件重建，全场0–0则安全确定半场0–0；事件数无法与全场比分对齐时仍显示“待核验”，不猜测。兼容 UEFA 返回的 `OWN` 与 `OWN_GOAL` 两种乌龙球编码。
+3. 资格赛晋级图的第一轮、第二轮、第三轮和附加赛现在每张对阵卡都为双方球队显示来源。程序按上一轮真实胜者自动标记“上一轮晋级”，其余显示“本轮新加入”；当前赛季第三轮保留已核实的欧冠冠军路径、主路径淘汰及直接参赛说明。
+
+### 数据与实现
+
+- `app/api/uel-live/route.ts`：实时数据增加半场比分推导、输出质量来源和已完赛开球时间；仅当进球事件总数与全场总进球一致、且半场分项不超过全场分项时接受重建值。
+- `scripts/generate-uel-season-archives.mjs` / `season-archives.js`：用同一规则从 UEFA 官方比赛和积分榜接口重新生成 2024/25、2025/26 完整归档。两季共540场比赛的半场比分现均有 `official`、`events` 或 `zero-zero` 来源，无“—”残留。
+- `season-model.js` / `live-update.js`：在接口、本地比赛数组和卡片之间保留开球时间与半场质量标记。
+- `season-dashboard.js` / `.css`：复用 `schedule-upgrade.js` 的球队资料组件，调整桌面/手机信息密度。
+- `advancement.js`、`team-origin.css`、`origin-colors.css`：统一四轮来源推导和标签配色，历史赛季也不再统一显示“未分类”。
+- `index.html` 已更新上述数据、脚本和样式的缓存版本，避免 Cloudflare Pages 发布后浏览器继续使用旧资源。
+
+### 验证与限制
+
+- `npm test` 通过：11项构建/API/归档测试，包括不可核验半场不猜测、进球事件重建、0–0逻辑、分页和两季归档完整性。
+- `node --test tests/uel-season.test.mjs` 通过：5项 jsdom 交互测试，断言赛果卡片的双方资料块、半场来源、当前赛季40组对阵/80个球队来源标签，以及历史赛季独立运行。
+- 新增及修改的浏览器 JavaScript 均通过 `node --check`；vinext/Cloudflare 构建通过。仓库整体 `tsc --noEmit` 仍会因现有 `cloudflare:workers`、`Fetcher` 和 `D1Database` 类型未在全局 TypeScript 环境声明而报错，与本次 API 逻辑无关。
+- 资格赛“本轮新加入”表示该队未出现在上一轮欧罗巴对阵；除已有 UEFA 精确路径数据的第三轮外，不额外猜测其为国内直通或欧冠转入。
+
 ## Learn More
 
 - [vinext Documentation](https://github.com/cloudflare/vinext)
